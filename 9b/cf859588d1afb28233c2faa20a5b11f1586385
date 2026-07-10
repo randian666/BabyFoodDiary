@@ -1,0 +1,25 @@
+BabyFoodDiary/BabyFoodDiary/Design/AppTheme.swift
+  s_cfa1e4615f0658::t_9df96002993c65 1-16
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_cfa1e4615f0658::t_9df96002993c65 1-20
+BabyFoodDiary/BabyFoodDiary.xcodeproj/project.pbxproj
+  s_cfa1e4615f0658::t_9df96002993c65 1-79
+BabyFoodDiary/BabyFoodDiaryTests/BabyFoodDiaryTests.swift
+  s_cfa1e4615f0658::t_faa44bdb3fddf2 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "9bcf859588d1afb28233c2faa20a5b11f1586385",
+  "prompts": {},
+  "sessions": {
+    "s_cfa1e4615f0658": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4ce5-8d42-7091-99d1-667916975e5b",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
