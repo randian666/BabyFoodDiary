@@ -1,0 +1,22 @@
+docs/superpowers/specs/2026-07-10-baby-food-diary-playful-candy-design-system.md
+  s_ed423aa6583442::t_bf845baad7939d 1-7
+design-system/泡泡的辅食日记/MASTER.md
+  s_ed423aa6583442::t_bf845baad7939d 1-2,4-123
+  s_ed423aa6583442::t_f9d484fb96d13c 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "060c56ad9cc25ef4821236443449d4a4abcba017",
+  "prompts": {},
+  "sessions": {
+    "s_ed423aa6583442": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4aea-c86a-7320-9b6b-43ca2f8a4332",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
