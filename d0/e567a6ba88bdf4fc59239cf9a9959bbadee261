@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-07-11-apricot-vibrant-ios-ui-design.md
+  s_cfa1e4615f0658::t_d1321106e83ac1 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "d0e567a6ba88bdf4fc59239cf9a9959bbadee261",
+  "prompts": {},
+  "sessions": {
+    "s_cfa1e4615f0658": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4ce5-8d42-7091-99d1-667916975e5b",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
