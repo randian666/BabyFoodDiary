@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-07-12-settings-json-export-design.md
+  s_cfa1e4615f0658::t_5c7760d13a46c8 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "cbb335da5a02bb852d345c8c1e49cd26e501480c",
+  "prompts": {},
+  "sessions": {
+    "s_cfa1e4615f0658": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4ce5-8d42-7091-99d1-667916975e5b",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
