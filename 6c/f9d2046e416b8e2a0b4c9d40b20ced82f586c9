@@ -1,0 +1,97 @@
+docs/superpowers/specs/2026-07-12-home-frequent-and-history-design.md
+  s_d80d3cce2603a4::t_9d2d747e3a1cc2 1-31
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_cfa1e4615f0658::t_a2b39aa7bece21 46-61
+  s_cfa1e4615f0658::t_82091e4cd6b374 208-209,246,251-254,256-266,268-271,273,275,286,290,292,294
+  s_cfa1e4615f0658::t_da4c5aee2875b4 88-90
+  s_cfa1e4615f0658::t_9e83586226697b 279-283
+  s_cfa1e4615f0658::t_de2a0b24d2d484 85-87,91-95,101,106,110
+  s_cfa1e4615f0658::t_35d70de42ac3c1 181-199
+  s_cfa1e4615f0658::t_06140987999975 220-221
+  s_cfa1e4615f0658::t_491600677d00f5 121
+  s_d80d3cce2603a4::t_90535abb021eb4 38-43
+  s_cfa1e4615f0658::t_1b75efb8c23136 2,44,82-83,146,284,486-540
+  s_cfa1e4615f0658::t_cf3149758ce495 123,127,133-138
+  s_cfa1e4615f0658::t_5e4aec8a9ac404 145,149-180
+  s_cfa1e4615f0658::t_4fa9a1ef462ce4 302
+  s_cfa1e4615f0658::t_c2e19a7cbfebf3 128
+  s_cfa1e4615f0658::t_2cf1fc7a7d5f29 316-326
+  s_cfa1e4615f0658::t_c665ad54eebf3d 308-315,327-329,332-334
+  s_cfa1e4615f0658::t_b745e609ab482c 67,71-76,81,119,122,337-485
+  s_cfa1e4615f0658::t_2d3acde851e926 147-148
+  s_cfa1e4615f0658::t_a4da352232cd83 203-207,210-219,222-232,235-245,247-250,255,276-278,298
+  s_cfa1e4615f0658::t_043aaac8dfcb8e 141
+  s_cfa1e4615f0658::t_b5e75d8e254f6c 267,272,274,287-289,291,293,295-297
+  s_cfa1e4615f0658::t_7bd49b6699613e 45
+  s_cfa1e4615f0658::t_0b19372079b3ca 84
+  s_cfa1e4615f0658::t_3301ea98a41ae1 285
+  s_cfa1e4615f0658::t_225faec3b1e868 335
+docs/superpowers/plans/2026-07-10-baby-food-diary-static-visual.md
+  s_ab00db7051ee04::t_ab51ea731c0212 1-30,32-34,36-38,40-51,53-55,57-58
+  s_ab00db7051ee04::t_260af48a72ef67 31,35,39,52,56
+docs/superpowers/plans/2026-07-12-home-frequent-and-history.md
+  s_d80d3cce2603a4::t_f8afb7b97fe552 1-137
+docs/superpowers/plans/2026-07-11-apricot-vibrant-ios-ui.md
+  s_cfa1e4615f0658::t_742109fcb5ed71 1-273
+BabyFoodDiary/BabyFoodDiaryTests/BabyFoodDiaryTests.swift
+  s_cfa1e4615f0658::t_8a94f7ca865e64 50-53
+  s_d80d3cce2603a4::t_ddd3c2a2288110 19-25
+  s_cfa1e4615f0658::t_d1e87a49114ae9 38-49
+  s_d80d3cce2603a4::t_e754b7749c1a1e 5-18
+docs/superpowers/plans/2026-07-12-settings-json-export.md
+  s_cfa1e4615f0658::t_a8e4fafa79f037 1-45
+design-qa.md
+  s_ab00db7051ee04::t_260af48a72ef67 1-39
+docs/宝宝辅食日记-产品需求文档.md
+  s_ed423aa6583442::t_05091f2015c55e 1-186
+.gitignore
+  s_3bc27bbec6eecd::t_94266035aaae6d 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "6cf9d2046e416b8e2a0b4c9d40b20ced82f586c9",
+  "prompts": {},
+  "sessions": {
+    "s_3bc27bbec6eecd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cfcf2cfa-b81c-46fb-8176-c6b2a2f40132",
+        "model": "unknown"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_ab00db7051ee04": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4a28-b24d-7912-91d1-fcc0d87704bf",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_cfa1e4615f0658": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4ce5-8d42-7091-99d1-667916975e5b",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_d80d3cce2603a4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f51f7-0196-7431-a552-76d799bde371",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_ed423aa6583442": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4aea-c86a-7320-9b6b-43ca2f8a4332",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
