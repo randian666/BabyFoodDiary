@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>风格D · 极简冷淡风 — 泡泡的辅食日记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#F2F4F7;
+    --ink:#0E1116; --ink2:#828B96; --ink3:#B6BCC5;
+    --line:#ECEEF1; --line2:#E2E5EA;
+    --primary:#4F46E5; --primary-d:#4338CA; --primary-soft:#EEEDFC;
+    --like:#16A34A; --mid:#CA8A04; --no:#DC2626; --allergy:#7C3AED;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--ink);padding:64px 60px 80px}
+  .head{max-width:1370px;margin:0 auto 44px}
+  .eyebrow{letter-spacing:.22em;font-size:12px;color:var(--primary);text-transform:uppercase;font-weight:600}
+  .head h1{font-size:46px;font-weight:800;margin-top:10px;letter-spacing:-.03em}
+  .head .sub{font-size:16px;color:var(--ink2);margin-top:12px;max-width:740px;line-height:1.7;font-weight:400}
+  .chips{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .chip{font-size:13px;font-weight:500;color:var(--ink2);background:var(--surface);border:1px solid var(--line);padding:7px 13px;border-radius:8px}
+  .row{display:flex;gap:52px;justify-content:center;flex-wrap:wrap;max-width:1370px;margin:0 auto}
+  .phone{width:380px;height:800px;background:var(--surface);border-radius:44px;position:relative;flex:none;box-shadow:0 0 0 9px #2a2a2a,0 0 0 11px #111,0 30px 60px -22px rgba(0,0,0,.30);overflow:hidden}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:118px;height:30px;background:#000;border-radius:0 0 18px 18px;z-index:30}
+  .screen{position:absolute;inset:0;border-radius:36px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:8px 26px 0;flex:none;font-weight:600;font-size:14px;color:var(--ink)}
+  .statusbar .r{display:flex;gap:6px;align-items:center}
+  .scroll{flex:1;overflow:hidden;padding:0 18px}
+  .tabbar{height:74px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:space-around;padding:0 14px 20px;position:relative}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink3);font-size:10px;font-weight:500;flex:1}
+  .tab.on{color:var(--primary)}
+  .tab svg{width:22px;height:22px}
+  .fab{position:absolute;left:50%;top:-26px;transform:translateX(-50%);width:56px;height:56px;border-radius:16px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.35)}
+  .fab svg{width:26px;height:26px}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 16px}
+  .nav-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .iconbtn{width:38px;height:38px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+  .iconbtn svg{width:19px;height:19px}
+  .txtbtn{display:flex;align-items:center;gap:5px;font-weight:500;font-size:13px;color:var(--primary)}
+  .txtbtn svg{width:15px;height:15px}
+  .sec-title{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:7px}
+  .pill svg{width:13px;height:13px}
+  .like{color:var(--like);background:#E7F5EC}
+  .mid{color:var(--mid);background:#FBF1D8}
+  .no{color:var(--no);background:#FBDDDE}
+  .allergy{color:var(--allergy);background:#EFEAF8}
+  .thumb{flex:none;display:flex;align-items:center;justify-content:center;border-radius:10px}
+  .thumb svg{width:32px;height:32px;opacity:.85}
+  .num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V12h6v9"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+  <symbol id="i-chevr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-4 3-8 9-9 1 6-2 9-2 9"/><path d="M5 21c2-4 4-6 8-8"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></symbol>
+  <symbol id="i-meh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 16h8"/><path d="M9 10h.01M15 10h.01"/></symbol>
+  <symbol id="i-frown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><path d="M9 10h.01M15 10h.01"/></symbol>
+  <symbol id="i-allergy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01"/><path d="M8 16c1-1.5 2.5-2 4-2s3 .5 4 2"/></symbol>
+  <symbol id="i-signal" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.5a11 11 0 0 1 16 0"/><path d="M3.5 7a7 7 0 0 1 11 0"/><path d="M6 9.5a3 3 0 0 1 6 0"/></symbol>
+  <symbol id="i-batt" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="currentColor"/><rect x="23.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="currentColor"/></symbol>
+  <symbol id="f-broccoli" viewBox="0 0 48 48"><g><circle cx="16" cy="20" r="8" fill="#fff" opacity=".5"/><circle cx="30" cy="18" r="9" fill="#fff" opacity=".5"/><circle cx="24" cy="28" r="8" fill="#fff" opacity=".5"/><rect x="20" y="28" width="8" height="12" rx="2" fill="#fff" opacity=".6"/></g></symbol>
+  <symbol id="f-porridge" viewBox="0 0 48 48"><g><path d="M8 22h32l-3 14a4 4 0 0 1-4 3H15a4 4 0 0 1-4-3z" fill="#fff" opacity=".55"/><circle cx="17" cy="16" r="3" fill="#fff" opacity=".7"/><circle cx="28" cy="14" r="3.5" fill="#fff" opacity=".7"/><circle cx="34" cy="20" r="2.5" fill="#fff" opacity=".7"/></g></symbol>
+  <symbol id="f-carrot" viewBox="0 0 48 48"><g><path d="M22 12l4 0 0 6 6-3 2 3-6 4 6 3-2 3-6-3 0 6-4 0 0-6-6 3-2-3 6-4-6-3 2-3 6 3z" fill="#fff" opacity=".5"/></g></symbol>
+  <symbol id="f-egg" viewBox="0 0 48 48"><g><ellipse cx="24" cy="26" rx="13" ry="15" fill="#fff" opacity=".55"/><ellipse cx="20" cy="20" rx="4" ry="6" fill="#fff" opacity=".8"/></g></symbol>
+  <symbol id="f-apple" viewBox="0 0 48 48"><g><path d="M24 14c-4-4-12-2-12 6 0 9 6 16 12 16s12-7 12-16c0-8-8-10-12-6z" fill="#fff" opacity=".55"/><path d="M24 14c0-3 2-5 4-6" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/></g></symbol>
+  <symbol id="f-purple" viewBox="0 0 48 48"><g><circle cx="24" cy="26" r="13" fill="#fff" opacity=".55"/><circle cx="20" cy="22" r="4" fill="#fff" opacity=".8"/></g></symbol>
+  <symbol id="f-meatball" viewBox="0 0 48 48"><g><circle cx="24" cy="26" r="12" fill="#fff" opacity=".55"/><circle cx="20" cy="22" r="2.5" fill="#fff" opacity=".8"/><circle cx="28" cy="28" r="2.5" fill="#fff" opacity=".8"/></g></symbol>
+</defs></svg>
+
+<div class="head">
+  <div class="eyebrow">Style D · Minimal Native</div>
+  <h1>极简冷淡风</h1>
+  <div class="sub">近白底 + 墨黑文字 + 单一靛蓝强调,扁平、克制、大量留白。靠字重与间距建立层级,几乎不用阴影,呈现 iOS 原生般的干净、专业与信任感。</div>
+  <div class="chips">
+    <span class="chip">主色 #4F46E5 靛蓝</span>
+    <span class="chip">字体 Inter(全系字重)</span>
+    <span class="chip">圆角 14px · 细边框</span>
+    <span class="chip">扁平 · 无阴影 · 留白</span>
+  </div>
+</div>
+
+<div class="row">
+
+  <!-- 屏1 首页 -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll">
+        <div class="topnav">
+          <div>
+            <div style="font-size:12px;color:var(--ink2);font-weight:500">7月10日 周四</div>
+            <div class="nav-title">泡泡的辅食日记</div>
+          </div>
+          <div class="iconbtn"><svg><use href="#i-bell"/></svg></div>
+        </div>
+
+        <div class="card" style="display:flex;align-items:center;gap:13px">
+          <div style="width:46px;height:46px;border-radius:12px;background:#E8E7FC;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700;font-size:17px;flex:none">泡</div>
+          <div style="flex:1">
+            <div style="font-size:16px;font-weight:700">泡泡</div>
+            <div style="font-size:12px;color:var(--ink2);font-weight:500;margin-top:3px">10个月20天 · 男宝</div>
+          </div>
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></div>
+        </div>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin:22px 4px 0">
+          <div class="sec-title">今日概览</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:13px;color:var(--ink2);font-weight:500">2024年5月20日<svg width="14" height="14" style="color:var(--ink3)"><use href="#i-chevr"/></svg></div>
+        </div>
+        <!-- 统计条 -->
+        <div class="card" style="margin-top:10px;padding:16px 6px;display:flex">
+          <div style="flex:1;text-align:center">
+            <div class="num" style="font-size:22px;font-weight:800;letter-spacing:-.03em">—</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:4px">重点观察</div>
+          </div>
+          <div style="width:1px;background:var(--line)"></div>
+          <div style="flex:1;text-align:center">
+            <div class="num" style="font-size:22px;font-weight:800;letter-spacing:-.03em;color:var(--like)">3</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:4px">好久没吃</div>
+          </div>
+          <div style="width:1px;background:var(--line)"></div>
+          <div style="flex:1;text-align:center">
+            <div class="num" style="font-size:22px;font-weight:800;letter-spacing:-.03em;color:var(--primary)">1</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:4px">已记录(餐)</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 4px 10px">
+          <div class="sec-title">好久没吃的菜谱</div>
+          <div class="txtbtn"><svg><use href="#i-refresh"/></svg>换一换</div>
+        </div>
+        <div style="display:flex;gap:10px;overflow:hidden">
+          <div class="card" style="flex:none;width:154px;padding:11px">
+            <div class="thumb" style="width:100%;height:82px;background:#DDE6D0"><svg><use href="#f-broccoli"/></svg></div>
+            <div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.3">西兰花鸡肉小软饼</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:3px">已 16 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+          <div class="card" style="flex:none;width:154px;padding:11px">
+            <div class="thumb" style="width:100%;height:82px;background:#EBD9B0"><svg><use href="#f-porridge"/></svg></div>
+            <div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.3">南瓜小米粥</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:3px">已 18 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+          <div class="card" style="flex:none;width:154px;padding:11px;opacity:.95">
+            <div class="thumb" style="width:100%;height:82px;background:#E8C6A0"><svg><use href="#f-carrot"/></svg></div>
+            <div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.3">胡萝卜土豆泥</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:500;margin-top:3px">已 15 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;display:flex;gap:12px;align-items:center">
+          <div style="width:38px;height:38px;border-radius:10px;background:#E7F5EC;display:flex;align-items:center;justify-content:center;color:var(--like)"><svg width="20" height="20"><use href="#i-leaf"/></svg></div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:var(--ink2);font-weight:500">重点观察</div>
+            <div style="font-size:13px;font-weight:500;margin-top:1px">这几天没有需要特别观察的食材</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab on"><svg><use href="#i-home"/></svg>首页</div>
+        <div class="tab"><svg><use href="#i-book"/></svg>菜谱</div>
+        <div style="width:56px"></div>
+        <div class="tab"><svg><use href="#i-chart"/></svg>分析</div>
+        <div class="tab"><svg><use href="#i-clock"/></svg>历史</div>
+        <div class="fab"><svg><use href="#i-plus"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 屏2 记录一餐 -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll">
+        <div class="topnav">
+          <div class="iconbtn"><svg><use href="#i-back"/></svg></div>
+          <div class="nav-title">记录一餐</div>
+          <div class="txtbtn" style="color:var(--ink2)">清空</div>
+        </div>
+
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:11px;color:var(--ink2);font-weight:500">日期</div><div style="font-size:16px;font-weight:700;margin-top:2px">2024年5月20日</div></div>
+          <svg width="18" height="18" style="color:var(--primary)"><use href="#i-chevr"/></svg>
+        </div>
+
+        <div style="margin:16px 4px 9px;font-size:12px;font-weight:600;color:var(--ink2);letter-spacing:.02em">选择餐次</div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--primary);color:#fff;font-weight:600;font-size:13px">早餐</div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-weight:500;font-size:13px;color:var(--ink2)">午餐</div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-weight:500;font-size:13px;color:var(--ink2)">晚餐</div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-weight:500;font-size:13px;color:var(--ink2)">加餐</div>
+        </div>
+
+        <div style="margin:16px 4px 9px" class="sec-title">选择菜谱</div>
+        <div class="card" style="padding:5px">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:38px;height:38px;background:#EBD9B0"><svg width="20" height="20"><use href="#f-porridge"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">南瓜小米粥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>喜欢</span>
+            <svg width="15" height="15" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:38px;height:38px;background:#F0E6B0"><svg width="20" height="20"><use href="#f-egg"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">蒸蛋黄</div>
+            <span class="pill mid"><svg><use href="#i-meh"/></svg>一般</span>
+            <svg width="15" height="15" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:38px;height:38px;background:#E8C6C8"><svg width="20" height="20"><use href="#f-apple"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">苹果泥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>喜欢</span>
+            <svg width="15" height="15" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+        </div>
+        <div style="margin-top:9px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;color:var(--primary)"><svg width="15" height="15"><use href="#i-plus"/></svg>添加其他食物</div>
+
+        <div style="margin:14px 4px 7px;font-size:12px;font-weight:600;color:var(--ink2)">上传照片<span style="color:var(--ink3);font-weight:500">（选填）</span></div>
+        <div style="height:72px;border-radius:12px;background:var(--surface);border:1px dashed var(--line2);display:flex;align-items:center;justify-content:center;color:var(--ink3)"><svg width="26" height="26"><use href="#i-camera"/></svg></div>
+
+        <div style="margin:13px 4px 7px;font-size:12px;font-weight:600;color:var(--ink2)">备注<span style="color:var(--ink3);font-weight:500">（选填）</span></div>
+        <div class="card" style="padding:11px 13px;color:var(--ink3);font-size:13px;font-weight:400;min-height:48px">记录宝宝的表现、食用量等…</div>
+
+        <div style="margin:13px 4px 8px;font-size:12px;font-weight:600;color:var(--ink2)">接受度</div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:12px;background:#E7F5EC;border:1px solid #BFE3CC"><div style="color:var(--like)"><svg width="20" height="20" style="display:block;margin:0 auto"><use href="#i-smile"/></svg></div><div style="font-size:11px;font-weight:600;color:var(--like);margin-top:3px">喜欢</div></div>
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line)"><div style="color:var(--mid)"><svg width="20" height="20" style="display:block;margin:0 auto"><use href="#i-meh"/></svg></div><div style="font-size:11px;font-weight:500;color:var(--mid);margin-top:3px">一般</div></div>
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line)"><div style="color:var(--no)"><svg width="20" height="20" style="display:block;margin:0 auto"><use href="#i-frown"/></svg></div><div style="font-size:11px;font-weight:500;color:var(--no);margin-top:3px">拒绝</div></div>
+          <div style="flex:1;text-align:center;padding:9px 0;border-radius:12px;background:var(--surface);border:1px solid var(--line)"><div style="color:var(--allergy)"><svg width="20" height="20" style="display:block;margin:0 auto"><use href="#i-allergy"/></svg></div><div style="font-size:11px;font-weight:500;color:var(--allergy);margin-top:3px">过敏</div></div>
+        </div>
+      </div>
+
+      <div style="padding:9px 18px 16px;background:linear-gradient(180deg,transparent,var(--bg) 40%)">
+        <div style="height:50px;border-radius:14px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:600;box-shadow:0 6px 16px rgba(79,70,229,.3)">保存</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 屏3 分析 -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll">
+        <div class="topnav">
+          <div class="nav-title">接受度分析</div>
+          <div class="txtbtn" style="color:var(--ink2)"><svg><use href="#i-filter"/></svg>筛选</div>
+        </div>
+
+        <div class="card" style="text-align:center">
+          <div style="font-size:12px;color:var(--ink2);font-weight:500">近14天（5.7-5.20）反应比例</div>
+          <div style="position:relative;width:168px;height:168px;margin:14px auto 6px">
+            <svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg)">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#F2F4F7" stroke-width="12"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#16A34A" stroke-width="12" stroke-dasharray="193 301.6" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#EAB308" stroke-width="12" stroke-dasharray="63 301.6" stroke-dashoffset="-196" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#DC2626" stroke-width="12" stroke-dasharray="33 301.6" stroke-dashoffset="-262" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#7C3AED" stroke-width="12" stroke-dasharray="12 301.6" stroke-dashoffset="-298" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div class="num" style="font-size:28px;font-weight:800;letter-spacing:-.04em">28<span style="font-size:13px;color:var(--ink2);font-weight:600">餐</span></div>
+              <div style="font-size:10px;color:var(--ink2);font-weight:500;margin-top:-2px">总记录</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:3px;background:var(--like)"></span>喜欢 64%·18</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:3px;background:#EAB308"></span>一般 21%·6</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:3px;background:var(--no)"></span>拒绝 11%·3</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:3px;background:var(--allergy)"></span>过敏 4%·1</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 4px 10px">
+          <div class="sec-title">菜谱接受度排行榜</div>
+          <div class="txtbtn" style="color:var(--ink2)">更多</div>
+        </div>
+        <div class="card" style="padding:5px">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="num" style="font-size:13px;font-weight:700;color:var(--ink);width:20px;text-align:center;flex:none">1</div>
+            <div class="thumb" style="width:38px;height:38px;background:#EBD9B0"><svg width="20" height="20"><use href="#f-porridge"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">南瓜小米粥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>89%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="num" style="font-size:13px;font-weight:700;color:var(--ink);width:20px;text-align:center;flex:none">2</div>
+            <div class="thumb" style="width:38px;height:38px;background:#DDE6D0"><svg width="20" height="20"><use href="#f-broccoli"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">西兰花鸡肉小软饼</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>78%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="num" style="font-size:13px;font-weight:700;color:var(--ink);width:20px;text-align:center;flex:none">3</div>
+            <div class="thumb" style="width:38px;height:38px;background:#E0BDB0"><svg width="20" height="20"><use href="#f-meatball"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">胡萝卜牛肉丸</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>67%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="num" style="font-size:13px;font-weight:600;color:var(--ink3);width:20px;text-align:center;flex:none">4</div>
+            <div class="thumb" style="width:38px;height:38px;background:#D8CCE0"><svg width="20" height="20"><use href="#f-purple"/></svg></div>
+            <div style="flex:1;font-size:13px;font-weight:600">紫薯山药泥</div>
+            <span class="pill mid"><svg><use href="#i-meh"/></svg>50%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab"><svg><use href="#i-home"/></svg>首页</div>
+        <div class="tab"><svg><use href="#i-book"/></svg>菜谱</div>
+        <div style="width:56px"></div>
+        <div class="tab on"><svg><use href="#i-chart"/></svg>分析</div>
+        <div class="tab"><svg><use href="#i-clock"/></svg>历史</div>
+        <div class="fab"><svg><use href="#i-plus"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

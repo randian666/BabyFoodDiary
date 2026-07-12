@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>风格A · 粉嫩童趣风 — 泡泡的辅食日记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#FF6FA1; --primary-d:#D63D75; --primary-l:#FFA1C4;
+    --accent:#7C5CFF; --bg:#FFF0F5; --bg2:#FFE3EE;
+    --surface:#FFFFFF; --surface-2:#FFF6FA;
+    --ink:#4A2C3D; --ink2:#9B7A8A; --ink3:#C6A9B8;
+    --line:#F3D9E3;
+    --like:#4CC79A; --like-bg:#E3F7EE;
+    --mid:#FBB042;  --mid-bg:#FEF1DC;
+    --no:#FF7080;   --no-bg:#FFE6E9;
+    --allergy:#9B7AFF; --allergy-bg:#EFEBFF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{
+    font-family:'Nunito','PingFang SC','Microsoft YaHei',sans-serif;
+    background:
+      radial-gradient(900px 500px at 12% 0%, #FFE3EE 0%, transparent 60%),
+      radial-gradient(800px 500px at 100% 100%, #EFEBFF 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink); padding:64px 60px 80px;
+  }
+  .head{max-width:1370px;margin:0 auto 44px}
+  .eyebrow{font-family:'Varela Round',sans-serif;letter-spacing:.22em;font-size:13px;color:var(--primary);text-transform:uppercase;font-weight:700}
+  .head h1{font-family:'Varela Round','PingFang SC',sans-serif;font-size:46px;margin-top:10px;color:var(--ink);letter-spacing:.5px}
+  .head .sub{font-size:17px;color:var(--ink2);margin-top:10px;max-width:720px;line-height:1.6}
+  .chips{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .chip{font-size:13px;font-weight:700;color:var(--ink);background:var(--surface);padding:8px 14px;border-radius:999px;box-shadow:0 6px 14px rgba(214,61,117,.10)}
+  .row{display:flex;gap:52px;justify-content:center;flex-wrap:wrap;max-width:1370px;margin:0 auto}
+  .phone{
+    width:380px;height:800px;background:var(--surface);border-radius:46px;position:relative;flex:none;
+    box-shadow:0 2px 0 #fff inset, 0 0 0 9px #ffffff, 0 0 0 11px #F7D6E3,
+      0 40px 70px -20px rgba(160,70,110,.45), 0 18px 40px -12px rgba(124,92,255,.18);
+    overflow:hidden;
+  }
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:28px;background:#fff;border-radius:0 0 20px 20px;z-index:30}
+  .notch::after{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:60px;height:10px;background:#eee;border-radius:999px}
+  .screen{position:absolute;inset:0;border-radius:38px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:800;font-size:14px;color:var(--ink);padding-top:8px;flex:none}
+  .statusbar .r{display:flex;gap:6px;align-items:center}
+  .scroll{flex:1;overflow:hidden;padding:0 18px 92px}
+  .tabbar{position:absolute;left:18px;right:18px;bottom:18px;height:64px;background:var(--surface);border-radius:999px;display:flex;align-items:center;padding:0 10px;box-shadow:0 14px 28px rgba(214,61,117,.22),6px 6px 16px rgba(214,61,117,.10),-6px -6px 16px rgba(255,255,255,.9);z-index:20}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink3);font-size:9px;font-weight:700}
+  .tab .ic{width:44px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center}
+  .tab.on{color:var(--primary)}
+  .tab.on .ic{background:#FFE3EE}
+  .tab svg{width:21px;height:21px}
+  .tabsp{width:58px;flex:none}
+  .fab{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#FF94B9,#FF5C90);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 var(--primary-d),0 12px 18px rgba(214,61,117,.40),inset 0 2px 0 rgba(255,255,255,.5);color:#fff;z-index:21}
+  .fab svg{width:27px;height:27px}
+  .fab:active{transform:translate(-50%,-50%)}
+  /* ---------- shared UI ---------- */
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 14px}
+  .nav-title{font-family:'Varela Round','PingFang SC',sans-serif;font-size:21px;font-weight:700;color:var(--ink)}
+  .iconbtn{width:42px;height:42px;border-radius:16px;background:var(--surface);display:flex;align-items:center;justify-content:center;
+    box-shadow:5px 5px 10px rgba(214,61,117,.12),-5px -5px 10px #fff;color:var(--ink)}
+  .iconbtn svg{width:20px;height:20px}
+  .txtbtn{display:flex;align-items:center;gap:4px;font-weight:800;font-size:13px;color:var(--primary)}
+  .txtbtn svg{width:15px;height:15px}
+  .sec-title{font-family:'Varela Round','PingFang SC',sans-serif;font-size:17px;font-weight:700;color:var(--ink)}
+  .card{background:var(--surface);border-radius:26px;padding:18px;box-shadow:6px 6px 16px rgba(214,61,117,.10),-6px -6px 16px rgba(255,255,255,.9)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px}
+  .pill svg{width:13px;height:13px}
+  .like{color:var(--like);background:var(--like-bg)}
+  .mid{color:#C77F12;background:var(--mid-bg)}
+  .no{color:var(--no);background:var(--no-bg)}
+  .allergy{color:var(--allergy);background:var(--allergy-bg)}
+  .thumb{border-radius:16px;flex:none;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .thumb svg{width:34px;height:34px;opacity:.9}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V12h6v9"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-chevr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 4 13c0-4 3-8 9-9 1 6-2 9-2 9"/><path d="M5 21c2-4 4-6 8-8"/></symbol>
+  <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></symbol>
+  <symbol id="i-meh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 16h8"/><path d="M9 10h.01M15 10h.01"/></symbol>
+  <symbol id="i-frown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><path d="M9 10h.01M15 10h.01"/></symbol>
+  <symbol id="i-allergy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01"/><path d="M8 16c1-1.5 2.5-2 4-2s3 .5 4 2"/></symbol>
+  <symbol id="i-signal" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 18 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.5a11 11 0 0 1 16 0"/><path d="M3.5 7a7 7 0 0 1 11 0"/><path d="M6 9.5a3 3 0 0 1 6 0"/></symbol>
+  <symbol id="i-batt" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="currentColor"/><rect x="23.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="currentColor"/></symbol>
+  <!-- food glyphs -->
+  <symbol id="f-broccoli" viewBox="0 0 48 48"><g><circle cx="16" cy="20" r="8" fill="#fff" opacity=".5"/><circle cx="30" cy="18" r="9" fill="#fff" opacity=".5"/><circle cx="24" cy="28" r="8" fill="#fff" opacity=".5"/><rect x="20" y="28" width="8" height="12" rx="2" fill="#fff" opacity=".6"/></g></symbol>
+  <symbol id="f-porridge" viewBox="0 0 48 48"><g><path d="M8 22h32l-3 14a4 4 0 0 1-4 3H15a4 4 0 0 1-4-3z" fill="#fff" opacity=".55"/><circle cx="17" cy="16" r="3" fill="#fff" opacity=".7"/><circle cx="28" cy="14" r="3.5" fill="#fff" opacity=".7"/><circle cx="34" cy="20" r="2.5" fill="#fff" opacity=".7"/></g></symbol>
+  <symbol id="f-carrot" viewBox="0 0 48 48"><g><path d="M22 12l4 0 0 6 6-3 2 3-6 4 6 3-2 3-6-3 0 6-4 0 0-6-6 3-2-3 6-4-6-3 2-3 6 3z" fill="#fff" opacity=".5"/></g></symbol>
+  <symbol id="f-egg" viewBox="0 0 48 48"><g><ellipse cx="24" cy="26" rx="13" ry="15" fill="#fff" opacity=".55"/><ellipse cx="20" cy="20" rx="4" ry="6" fill="#fff" opacity=".8"/></g></symbol>
+  <symbol id="f-apple" viewBox="0 0 48 48"><g><path d="M24 14c-4-4-12-2-12 6 0 9 6 16 12 16s12-7 12-16c0-8-8-10-12-6z" fill="#fff" opacity=".55"/><path d="M24 14c0-3 2-5 4-6" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/></g></symbol>
+  <symbol id="f-purple" viewBox="0 0 48 48"><g><circle cx="24" cy="26" r="13" fill="#fff" opacity=".55"/><circle cx="20" cy="22" r="4" fill="#fff" opacity=".8"/></g></symbol>
+  <symbol id="f-meatball" viewBox="0 0 48 48"><g><circle cx="24" cy="26" r="12" fill="#fff" opacity=".55"/><circle cx="20" cy="22" r="2.5" fill="#fff" opacity=".8"/><circle cx="28" cy="28" r="2.5" fill="#fff" opacity=".8"/></g></symbol>
+</defs></svg>
+
+<div class="head">
+  <div class="eyebrow">Style A · Pastel Clay</div>
+  <h1>粉嫩童趣风</h1>
+  <div class="sub">软糖质感 · 胖乎乎圆润 · 马卡龙柔粉。亲和可爱的母婴基调，主操作按钮做成 3D 果冻软糖，大面积圆角与柔和彩色阴影，让"记录宝宝吃饭"这件温暖的小事变得轻松愉悦。</div>
+  <div class="chips">
+    <span class="chip">主色 #FF6FA1 糖果粉</span>
+    <span class="chip">字体 Varela Round + Nunito</span>
+    <span class="chip">圆角 24–28px</span>
+    <span class="chip">软糖阴影 / 彩色柔光</span>
+  </div>
+</div>
+
+<div class="row">
+
+  <!-- ====================== 屏1 首页 ====================== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll">
+        <div class="topnav">
+          <div>
+            <div style="font-size:12px;color:var(--ink2);font-weight:700">7月10日 周四</div>
+            <div class="nav-title">泡泡的辅食日记</div>
+          </div>
+          <div class="iconbtn"><svg><use href="#i-bell"/></svg></div>
+        </div>
+
+        <!-- 用户卡 -->
+        <div class="card" style="display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,#FFF1F6,#F3E9FF);box-shadow:6px 6px 16px rgba(214,61,117,.12),-6px -6px 16px #fff">
+          <div style="width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFC9DC,#FF6FA1);flex:none;box-shadow:inset 0 2px 4px rgba(255,255,255,.6),0 4px 10px rgba(214,61,117,.3)"></div>
+          <div style="flex:1">
+            <div style="font-family:'Varela Round','PingFang SC',sans-serif;font-size:19px;font-weight:700">泡泡</div>
+            <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+              <span class="pill mid" style="background:#fff;color:#C77F12">10个月20天</span>
+              <span class="pill" style="background:#DCE9FF;color:#3B6FD1">男宝</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 今日概览 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 4px 12px">
+          <div class="sec-title">今日概览</div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:13px;color:var(--ink2);font-weight:700">2024年5月20日<svg width="15" height="15" style="color:var(--ink2)"><use href="#i-chevr"/></svg></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div class="card" style="flex:1;padding:14px 10px;text-align:center">
+            <div style="font-size:11px;color:var(--ink2);font-weight:700">重点观察</div>
+            <div style="font-family:'Varela Round',sans-serif;font-size:20px;font-weight:700;color:var(--ink3);margin-top:6px">无</div>
+          </div>
+          <div class="card" style="flex:1;padding:14px 10px;text-align:center">
+            <div style="font-size:11px;color:var(--ink2);font-weight:700">好久没吃</div>
+            <div style="margin-top:6px"><span style="font-family:'Varela Round',sans-serif;font-size:20px;font-weight:700;color:var(--like)">3</span><span style="font-size:12px;color:var(--like);font-weight:700"> 道</span></div>
+          </div>
+          <div class="card" style="flex:1;padding:14px 10px;text-align:center">
+            <div style="font-size:11px;color:var(--ink2);font-weight:700">已记录</div>
+            <div style="margin-top:6px"><span style="font-family:'Varela Round',sans-serif;font-size:20px;font-weight:700;color:var(--primary)">1</span><span style="font-size:12px;color:var(--primary);font-weight:700"> 餐</span></div>
+          </div>
+        </div>
+
+        <!-- 好久没吃 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 4px 12px">
+          <div class="sec-title">好久没吃的菜谱</div>
+          <div class="txtbtn"><svg><use href="#i-refresh"/></svg>换一换</div>
+        </div>
+        <div style="display:flex;gap:12px;overflow:hidden">
+          <div class="card" style="flex:none;width:160px;padding:12px">
+            <div class="thumb" style="width:100%;height:92px;background:linear-gradient(135deg,#A8D89E,#E8D56A)"><svg><use href="#f-broccoli"/></svg></div>
+            <div style="font-size:13px;font-weight:800;margin-top:9px;line-height:1.3">西兰花鸡肉小软饼</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:700;margin-top:3px">已 16 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+          <div class="card" style="flex:none;width:160px;padding:12px">
+            <div class="thumb" style="width:100%;height:92px;background:linear-gradient(135deg,#FFC785,#FFE08A)"><svg><use href="#f-porridge"/></svg></div>
+            <div style="font-size:13px;font-weight:800;margin-top:9px;line-height:1.3">南瓜小米粥</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:700;margin-top:3px">已 18 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+          <div class="card" style="flex:none;width:160px;padding:12px;opacity:.96">
+            <div class="thumb" style="width:100%;height:92px;background:linear-gradient(135deg,#FFA874,#FFD08A)"><svg><use href="#f-carrot"/></svg></div>
+            <div style="font-size:13px;font-weight:800;margin-top:9px;line-height:1.3">胡萝卜土豆泥</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:700;margin-top:3px">已 15 天未吃</div>
+            <div class="pill like" style="margin-top:8px"><svg><use href="#i-check"/></svg>安全复吃</div>
+          </div>
+        </div>
+
+        <!-- 重点观察 -->
+        <div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center">
+          <div style="width:44px;height:44px;border-radius:16px;background:var(--like-bg);display:flex;align-items:center;justify-content:center;color:var(--like)"><svg width="24" height="24"><use href="#i-leaf"/></svg></div>
+          <div>
+            <div style="font-size:12px;color:var(--ink2);font-weight:700">重点观察</div>
+            <div style="font-size:14px;font-weight:700;margin-top:2px">这几天没有需要特别观察的食材</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab on"><span class="ic"><svg><use href="#i-home"/></svg></span>首页</div>
+        <div class="tab"><span class="ic"><svg><use href="#i-book"/></svg></span>菜谱</div>
+        <div class="tabsp"></div>
+        <div class="tab"><span class="ic"><svg><use href="#i-chart"/></svg></span>分析</div>
+        <div class="tab"><span class="ic"><svg><use href="#i-clock"/></svg></span>历史</div>
+        <div class="fab"><svg><use href="#i-plus"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== 屏2 记录一餐 ====================== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll" style="padding-bottom:16px">
+        <div class="topnav">
+          <div class="iconbtn"><svg><use href="#i-back"/></svg></div>
+          <div class="nav-title">记录一餐</div>
+          <div class="txtbtn" style="color:var(--ink2)">清空</div>
+        </div>
+
+        <!-- 日期 -->
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:11px;color:var(--ink2);font-weight:700">日期</div><div style="font-family:'Varela Round','PingFang SC',sans-serif;font-size:18px;font-weight:700;margin-top:2px">2024年5月20日</div></div>
+          <svg width="18" height="18" style="color:var(--primary)"><use href="#i-chevr"/></svg>
+        </div>
+
+        <!-- 餐次 -->
+        <div style="margin:18px 4px 10px;font-size:13px;font-weight:800;color:var(--ink)">选择餐次</div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;text-align:center;padding:11px 0;border-radius:18px;background:linear-gradient(180deg,#FF94B9,#FF5C90);color:#fff;font-weight:800;font-size:13px;box-shadow:0 4px 0 var(--primary-d),0 8px 14px rgba(214,61,117,.35),inset 0 1px 0 rgba(255,255,255,.4)">早餐</div>
+          <div style="flex:1;text-align:center;padding:11px 0;border-radius:18px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink2);box-shadow:4px 4px 10px rgba(214,61,117,.10),-4px -4px 10px #fff">午餐</div>
+          <div style="flex:1;text-align:center;padding:11px 0;border-radius:18px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink2);box-shadow:4px 4px 10px rgba(214,61,117,.10),-4px -4px 10px #fff">晚餐</div>
+          <div style="flex:1;text-align:center;padding:11px 0;border-radius:18px;background:var(--surface);font-weight:700;font-size:13px;color:var(--ink2);box-shadow:4px 4px 10px rgba(214,61,117,.10),-4px -4px 10px #fff">加餐</div>
+        </div>
+
+        <!-- 菜谱 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 4px 10px"><span class="sec-title" style="font-size:15px">选择菜谱</span></div>
+        <div class="card" style="padding:6px">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#FFC785,#FFE08A)"><svg width="22" height="22"><use href="#f-porridge"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">南瓜小米粥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>喜欢</span>
+            <svg width="16" height="16" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#FFE082,#FFF59D)"><svg width="22" height="22"><use href="#f-egg"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">蒸蛋黄</div>
+            <span class="pill mid"><svg><use href="#i-meh"/></svg>一般</span>
+            <svg width="16" height="16" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#FF9AA8,#FFC1CC)"><svg width="22" height="22"><use href="#f-apple"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">苹果泥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>喜欢</span>
+            <svg width="16" height="16" style="color:var(--ink3)"><use href="#i-x"/></svg>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:800;color:var(--primary)"><svg width="16" height="16"><use href="#i-plus"/></svg>添加其他食物</div>
+
+        <!-- 照片 -->
+        <div style="margin:18px 4px 8px;font-size:13px;font-weight:800;color:var(--ink)">上传照片<span style="color:var(--ink2);font-weight:700">（选填）</span></div>
+        <div style="height:80px;border-radius:20px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--ink3);box-shadow:inset 4px 4px 8px rgba(214,61,117,.08),inset -4px -4px 8px #fff"><svg width="28" height="28"><use href="#i-camera"/></svg></div>
+
+        <!-- 备注 -->
+        <div style="margin:16px 4px 8px;font-size:13px;font-weight:800;color:var(--ink)">备注<span style="color:var(--ink2);font-weight:700">（选填）</span></div>
+        <div class="card" style="padding:12px 14px;color:var(--ink3);font-size:13px;font-weight:600;min-height:54px">记录宝宝的表现、食用量等…</div>
+
+        <!-- 接受度 -->
+        <div style="margin:16px 4px 10px;font-size:13px;font-weight:800;color:var(--ink)">接受度</div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:18px;background:var(--like-bg);box-shadow:0 4px 0 #3FAE82"><div style="color:var(--like)"><svg width="22" height="22" style="display:block;margin:0 auto"><use href="#i-smile"/></svg></div><div style="font-size:12px;font-weight:800;color:var(--like);margin-top:3px">喜欢</div></div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:18px;background:var(--surface)"><div style="color:var(--mid)"><svg width="22" height="22" style="display:block;margin:0 auto"><use href="#i-meh"/></svg></div><div style="font-size:12px;font-weight:700;color:var(--mid);margin-top:3px">一般</div></div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:18px;background:var(--surface)"><div style="color:var(--no)"><svg width="22" height="22" style="display:block;margin:0 auto"><use href="#i-frown"/></svg></div><div style="font-size:12px;font-weight:700;color:var(--no);margin-top:3px">拒绝</div></div>
+          <div style="flex:1;text-align:center;padding:10px 0;border-radius:18px;background:var(--surface)"><div style="color:var(--allergy)"><svg width="22" height="22" style="display:block;margin:0 auto"><use href="#i-allergy"/></svg></div><div style="font-size:12px;font-weight:700;color:var(--allergy);margin-top:3px">过敏</div></div>
+        </div>
+      </div>
+
+      <!-- 保存 sticky -->
+      <div style="padding:10px 18px 16px;background:linear-gradient(180deg,transparent,var(--bg) 40%)">
+        <div style="height:54px;border-radius:20px;background:linear-gradient(180deg,#FF94B9,#FF5C90);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Varela Round',sans-serif;font-size:18px;font-weight:700;box-shadow:0 6px 0 var(--primary-d),0 12px 22px rgba(214,61,117,.4),inset 0 2px 0 rgba(255,255,255,.5)">保存</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== 屏3 接受度分析 ====================== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span class="r"><svg width="18" height="12"><use href="#i-signal"/></svg><svg width="18" height="12"><use href="#i-wifi"/></svg><svg width="26" height="12"><use href="#i-batt"/></svg></span></div>
+      <div class="scroll">
+        <div class="topnav">
+          <div class="nav-title">接受度分析</div>
+          <div class="txtbtn" style="color:var(--ink2)"><svg><use href="#i-filter"/></svg>筛选</div>
+        </div>
+
+        <!-- 环形图 -->
+        <div class="card" style="text-align:center">
+          <div style="font-size:12px;color:var(--ink2);font-weight:700">近14天（5.7-5.20）反应比例</div>
+          <div style="position:relative;width:180px;height:180px;margin:14px auto 6px">
+            <svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg)">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--like-bg)" stroke-width="16"/>
+              <!-- 喜欢64% / 一般21% / 拒绝11% / 过敏4% ; 周长=2πr≈301.6 -->
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#4CC79A" stroke-width="16" stroke-dasharray="193 301.6" stroke-dashoffset="0" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#FBB042" stroke-width="16" stroke-dasharray="63 301.6" stroke-dashoffset="-196" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#FF7080" stroke-width="16" stroke-dasharray="33 301.6" stroke-dashoffset="-262" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#9B7AFF" stroke-width="16" stroke-dasharray="12 301.6" stroke-dashoffset="-298" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-family:'Varela Round',sans-serif;font-size:30px;font-weight:700;color:var(--ink)">28<span style="font-size:14px">餐</span></div>
+              <div style="font-size:11px;color:var(--ink2);font-weight:700;margin-top:-2px">总记录</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink)"><span style="width:9px;height:9px;border-radius:3px;background:var(--like)"></span>喜欢 64%·18</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink)"><span style="width:9px;height:9px;border-radius:3px;background:var(--mid)"></span>一般 21%·6</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink)"><span style="width:9px;height:9px;border-radius:3px;background:var(--no)"></span>拒绝 11%·3</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--ink)"><span style="width:9px;height:9px;border-radius:3px;background:var(--allergy)"></span>过敏 4%·1</div>
+          </div>
+        </div>
+
+        <!-- 排行榜 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 4px 12px">
+          <div class="sec-title">菜谱接受度排行榜</div>
+          <div class="txtbtn" style="color:var(--ink2)">更多</div>
+        </div>
+        <div class="card" style="padding:6px">
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div style="width:22px;text-align:center;font-family:'Varela Round',sans-serif;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFC785,#FF9E5C);width:24px;height:24px;border-radius:8px;line-height:24px;flex:none">1</div>
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#FFC785,#FFE08A)"><svg width="22" height="22"><use href="#f-porridge"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">南瓜小米粥</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>喜欢 89%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div style="text-align:center;font-family:'Varela Round',sans-serif;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(180deg,#E8D2C0,#C9A48E);width:24px;height:24px;border-radius:8px;line-height:24px;flex:none">2</div>
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#A8D89E,#E8D56A)"><svg width="22" height="22"><use href="#f-broccoli"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">西兰花鸡肉小软饼</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>78%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div style="text-align:center;font-family:'Varela Round',sans-serif;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(180deg,#F0C9A0,#D89B6E);width:24px;height:24px;border-radius:8px;line-height:24px;flex:none">3</div>
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#E8836A,#FFAB91)"><svg width="22" height="22"><use href="#f-meatball"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">胡萝卜牛肉丸</div>
+            <span class="pill like"><svg><use href="#i-smile"/></svg>67%</span>
+          </div>
+          <div style="height:1px;background:var(--line);margin:0 10px"></div>
+          <div style="display:flex;align-items:center;gap:11px;padding:9px 10px">
+            <div style="text-align:center;font-family:'Varela Round',sans-serif;font-size:15px;font-weight:700;color:var(--ink2);background:var(--surface-2);width:24px;height:24px;border-radius:8px;line-height:24px;flex:none">4</div>
+            <div class="thumb" style="width:42px;height:42px;background:linear-gradient(135deg,#C9A0DC,#E4C5F0)"><svg width="22" height="22"><use href="#f-purple"/></svg></div>
+            <div style="flex:1;font-size:14px;font-weight:800">紫薯山药泥</div>
+            <span class="pill mid"><svg><use href="#i-meh"/></svg>一般 50%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab"><span class="ic"><svg><use href="#i-home"/></svg></span>首页</div>
+        <div class="tab"><span class="ic"><svg><use href="#i-book"/></svg></span>菜谱</div>
+        <div class="tabsp"></div>
+        <div class="tab on"><span class="ic"><svg><use href="#i-chart"/></svg></span>分析</div>
+        <div class="tab"><span class="ic"><svg><use href="#i-clock"/></svg></span>历史</div>
+        <div class="fab"><svg><use href="#i-plus"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

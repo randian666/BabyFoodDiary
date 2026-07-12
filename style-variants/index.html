@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>泡泡的辅食日记 · 6 种 UI 视觉风格方案</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{font-family:'Inter','PingFang SC',sans-serif;background:#F4F2EE;color:#23211D;padding:56px 48px 80px}
+  .wrap{max-width:1480px;margin:0 auto}
+  .head{margin-bottom:18px}
+  .kicker{font-family:'Space Grotesk',sans-serif;letter-spacing:.22em;font-size:12px;color:#B8865B;text-transform:uppercase;font-weight:600}
+  .head h1{font-family:'Space Grotesk','PingFang SC',sans-serif;font-size:42px;font-weight:600;margin-top:10px;letter-spacing:-.5px}
+  .head p{font-size:16px;color:#7A766E;margin-top:12px;max-width:900px;line-height:1.7}
+  .batch{display:flex;align-items:center;gap:14px;margin:36px 0 20px}
+  .batch .n{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:#fff;background:#23211D;padding:5px 11px;border-radius:999px;letter-spacing:.04em}
+  .batch .t{font-size:15px;font-weight:600;color:#4A463E}
+  .batch .line{flex:1;height:1px;background:#E2DDD2}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+  .card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 16px 44px -20px rgba(60,50,30,.20);display:flex;flex-direction:column}
+  .top{height:7px}
+  .info{padding:20px 20px 16px}
+  .tag{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+  .info h2{font-family:'Space Grotesk','PingFang SC',sans-serif;font-size:22px;font-weight:600;margin-top:5px;letter-spacing:-.3px}
+  .info .en{font-family:'Space Grotesk',sans-serif;font-size:12px;color:#A39E92;margin-top:2px;font-weight:500}
+  .info .desc{font-size:13px;color:#6A665E;margin-top:10px;line-height:1.6}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#4A463E;background:#F4F2EC;padding:5px 9px;border-radius:999px}
+  .swatch{width:10px;height:10px;border-radius:3px;flex:none}
+  .shot{padding:0 12px 12px}
+  .shot a{display:block;border-radius:12px;overflow:hidden}
+  .shot img{display:block;width:100%;height:auto}
+  .foot{margin-top:40px;padding:20px 24px;background:#fff;border-radius:18px;font-size:13px;color:#6A665E;line-height:1.7}
+  .foot b{color:#23211D}
+  #cA .top{background:linear-gradient(90deg,#FF6FA1,#9B7AFF)} #cA .tag{color:#E0558C}
+  #cB .top{background:linear-gradient(90deg,#5E8C61,#C97B4B)} #cB .tag{color:#4A7050}
+  #cC .top{background:linear-gradient(90deg,#6FE0B0,#5BCDF5)} #cC .tag{color:#3FCB97}
+  #cD .top{background:linear-gradient(90deg,#4F46E5,#818CF8)} #cD .tag{color:#4F46E5}
+  #cE .top{background:linear-gradient(90deg,#FF7A3D,#FFB627)} #cE .tag{color:#E85D1F}
+  #cF .top{background:linear-gradient(90deg,#FF6B4A,#FFD23F)} #cF .tag{color:#161616}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="kicker">Baby Food Diary · Visual Direction</div>
+    <h1>6 种 UI 视觉风格方案</h1>
+    <p>在功能与信息架构完全不变的前提下(首页 / 菜谱库 / 接受度分析 / 历史记录 / 记录一餐),分两轮探索得到的 6 个视觉方向。每套含首页、记录一餐、接受度分析三个核心页面,数据与文案逐字一致,可作为选型与落地依据。</p>
+  </div>
+
+  <div style="max-width:1480px;margin:0 auto 26px;background:linear-gradient(120deg,#FFE9D6,#FFF3D6);border:2px solid #FF7A3D;border-radius:18px;padding:15px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 20px rgba(232,93,31,.15)">
+    <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#FF9A5C,#FF6A2A);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px">✓</div>
+    <div style="flex:1"><div style="font-weight:700;color:#3D2417;font-size:15px">已选定方向:<b>风格 E · 暖阳橘活力风</b></div><div style="font-size:13px;color:#9C7860;margin-top:2px">完整 5 屏版(首页 / 菜谱库 / 接受度分析 / 历史记录 / 记录一餐)已产出</div></div>
+    <a href="05-apricot-vibrant-full.html" target="_blank" style="background:linear-gradient(135deg,#FF9A5C,#FF6A2A);color:#fff;font-weight:700;font-size:13px;padding:11px 18px;border-radius:12px;text-decoration:none;box-shadow:0 5px 12px rgba(232,93,31,.3);white-space:nowrap">查看完整 5 屏 →</a>
+  </div>
+
+  <div class="batch"><span class="n">ROUND 1</span><span class="t">柔和 × 精致方向</span><span class="line"></span></div>
+  <div class="grid" style="margin-bottom:30px">
+
+    <div class="card" id="cA">
+      <div class="top"></div>
+      <div class="info">
+        <div class="tag">Style A</div>
+        <h2>粉嫩童趣风</h2>
+        <div class="en">Pastel Claymorphism</div>
+        <div class="desc">软糖按钮 + 马卡龙柔粉,圆润亲和、轻松愉悦,最贴合母婴温暖记录的情感基调。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#FF6FA1"></span>#FF6FA1</span>
+          <span class="chip">Varela Round + Nunito</span>
+        </div>
+        <a href="01-pastel-clay-full.html" target="_blank" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:12px;font-weight:700;color:#E0558C;text-decoration:none">查看完整 5 屏 →</a>
+      </div>
+      <div class="shot"><a href="01-pastel-clay.html" target="_blank"><img src="01-pastel-clay.png" alt="粉嫩童趣风"></a></div>
+    </div>
+
+    <div class="card" id="cB">
+      <div class="top"></div>
+      <div class="info">
+        <div class="tag">Style B</div>
+        <h2>鼠尾草自然风</h2>
+        <div class="en">Sage Organic Biophilic</div>
+        <div class="desc">莫兰迪鼠尾草绿 + 暖奶油 + 衬线标题 + 有机弧线,天然健康、温和安心的高级质感。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#5E8C61"></span>#5E8C61</span>
+          <span class="chip">Lora + Raleway</span>
+        </div>
+      </div>
+      <div class="shot"><a href="02-sage-organic.html" target="_blank"><img src="02-sage-organic.png" alt="鼠尾草自然风"></a></div>
+    </div>
+
+    <div class="card" id="cC">
+      <div class="top"></div>
+      <div class="info">
+        <div class="tag">Style C</div>
+        <h2>现代 Bento 玻璃风</h2>
+        <div class="en">Modern Bento + Glass · Dark</div>
+        <div class="desc">深色玻璃拟态 + Bento 拼贴 + 薄荷青辉光,精致专注、数据导向的高端工具气质。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#6FE0B0"></span>#6FE0B0</span>
+          <span class="chip">Space Grotesk + Inter</span>
+        </div>
+      </div>
+      <div class="shot"><a href="03-modern-bento.html" target="_blank"><img src="03-modern-bento.png" alt="现代Bento玻璃风"></a></div>
+    </div>
+
+  </div>
+
+  <div class="batch"><span class="n">ROUND 2</span><span class="t">克制 × 阳光 × 大胆方向</span><span class="line"></span></div>
+  <div class="grid">
+
+    <div class="card" id="cD">
+      <div class="top"></div>
+      <div class="info">
+        <div class="tag">Style D</div>
+        <h2>极简冷淡风</h2>
+        <div class="en">Minimal Native</div>
+        <div class="desc">近白底 + 墨黑 + 单一靛蓝,扁平、克制、大量留白,iOS 原生般的干净与专业信任感。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#4F46E5"></span>#4F46E5</span>
+          <span class="chip">Inter 全系字重</span>
+        </div>
+      </div>
+      <div class="shot"><a href="04-minimal-native.html" target="_blank"><img src="04-minimal-native.png" alt="极简冷淡风"></a></div>
+    </div>
+
+    <div class="card" id="cE" style="box-shadow:0 16px 44px -18px rgba(232,93,31,.45),0 0 0 2.5px #FF7A3D">
+      <div class="top"></div>
+      <div class="info">
+        <div style="display:flex;align-items:center;justify-content:space-between"><div class="tag">Style E</div><span style="font-size:11px;font-weight:700;color:#fff;background:linear-gradient(135deg,#FF9A5C,#FF6A2A);padding:4px 10px;border-radius:999px">✓ 已选定</span></div>
+        <h2>暖阳橘活力风</h2>
+        <div class="en">Apricot Vibrant</div>
+        <div class="desc">暖奶油 + 活力橘珊瑚 + 鹅黄,渐变按钮与暖色柔光,明亮阳光、传递成长与能量。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#FF7A3D"></span>#FF7A3D</span>
+          <span class="chip">Poppins + Nunito Sans</span>
+        </div>
+      </div>
+      <div class="shot"><a href="05-apricot-vibrant.html" target="_blank"><img src="05-apricot-vibrant.png" alt="暖阳橘活力风"></a></div>
+    </div>
+
+    <div class="card" id="cF">
+      <div class="top"></div>
+      <div class="info">
+        <div class="tag">Style F</div>
+        <h2>柔和粗野风</h2>
+        <div class="en">Soft Neo-Brutalism</div>
+        <div class="desc">奶油底 + 亮色块 + 粗黑描边 + 硬投影,大胆、有个性、年轻趣味,贴纸般的卡片质感。</div>
+        <div class="chips">
+          <span class="chip"><span class="swatch" style="background:#FF6B4A"></span>橘/黄/青</span>
+          <span class="chip">Archivo 900 + Inter</span>
+        </div>
+      </div>
+      <div class="shot"><a href="06-soft-brutalist.html" target="_blank"><img src="06-soft-brutalist.png" alt="柔和粗野风"></a></div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <b>功能一致性声明:</b> 6 套方案均完整保留原始功能——宝宝档案、今日概览(重点观察 / 好久没吃 / 已记录)、14 天安全复吃推荐、菜谱库、接受度分析(环形图 + 排行榜)、历史记录、记录一餐(餐次 / 菜谱 / 照片 / 接受度 / 备注)。仅替换配色、字体、圆角、阴影与卡片排布,数据与文案逐字一致。
+  </div>
+</div>
+</body>
+</html>
