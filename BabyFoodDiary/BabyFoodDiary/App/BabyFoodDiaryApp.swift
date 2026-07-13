@@ -1,9 +1,100 @@
 import SwiftUI
 import UIKit
+import SwiftData
+import Photos
+import PhotosUI
+import UniformTypeIdentifiers
+
+// MARK: - Quick Action support
+
+private extension Notification.Name {
+    static let recordMealQuickAction = Notification.Name("BabyFoodDiary.recordMealQuickAction")
+}
+
+private enum DiaryQuickActionCenter {
+    private(set) static var hasPendingRecordMeal = false
+
+    static func requestRecordMeal() {
+        hasPendingRecordMeal = true
+        NotificationCenter.default.post(name: .recordMealQuickAction, object: nil)
+    }
+
+    static func consumeRecordMeal() -> Bool {
+        guard hasPendingRecordMeal else { return false }
+        hasPendingRecordMeal = false
+        return true
+    }
+}
+
+final class DiarySceneDelegate: NSObject, UIWindowSceneDelegate {
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard connectionOptions.shortcutItem?.type == "record" else { return }
+        DiaryQuickActionCenter.requestRecordMeal()
+    }
+
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        guard shortcutItem.type == "record" else {
+            completionHandler(false)
+            return
+        }
+        DiaryQuickActionCenter.requestRecordMeal()
+        completionHandler(true)
+    }
+}
+
+final class DiaryAppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        application.shortcutItems = [
+            UIApplicationShortcutItem(type: "record", localizedTitle: "记录一餐", localizedSubtitle: nil,
+                                      icon: UIApplicationShortcutIcon(systemImageName: "plus.circle.fill"), userInfo: nil)
+        ]
+        return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        if connectingSceneSession.role == .windowApplication {
+            configuration.delegateClass = DiarySceneDelegate.self
+        }
+        return configuration
+    }
+
+    func consumeRecordMealLaunchAction() -> Bool {
+        DiaryQuickActionCenter.consumeRecordMeal()
+    }
+}
 
 @main
 struct BabyFoodDiaryApp: App {
-    var body: some Scene { WindowGroup { RootView() } }
+    @UIApplicationDelegateAdaptor var appDelegate: DiaryAppDelegate
+    let container: ModelContainer
+    @State private var store: DiaryStore
+
+    init() {
+        let container = try! DiaryStore.makeContainer()
+        self.container = container
+        _store = State(initialValue: DiaryStore(context: container.mainContext))
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView(consumeLaunchQuickAction: appDelegate.consumeRecordMealLaunchAction)
+                .environment(store)
+                .modelContainer(container)
+        }
+    }
 }
 
 enum AppTab: String, CaseIterable, Identifiable {
@@ -22,63 +113,130 @@ enum Reaction: String, CaseIterable, Identifiable {
 }
 
 struct Recipe: Identifiable {
-    let id = UUID(); let name: String; let categories: [String]; let count: Int; let last: String; let days: Int; let symbol: String; let colors: [Color]
-}
+    let id: UUID
+    let name: String
+    let categories: [String]
+    let count: Int
+    let last: String
+    let days: Int
+    let symbol: String
+    let iconID: String
+    let colorHexA: String
+    let colorHexB: String
+    var colors: [Color] { [Color(hex: colorHexA), Color(hex: colorHexB)] }
 
-enum DemoData {
-    static let recommendations = [
-        Recipe(name: "西兰花鸡肉小软饼", categories: ["主食", "肉食"], count: 12, last: "2024-05-18", days: 16, symbol: "leaf.fill", colors: [.green.opacity(0.72), .yellow.opacity(0.72)]),
-        Recipe(name: "南瓜小米粥", categories: ["主食"], count: 8, last: "2024-05-12", days: 18, symbol: "bowl.fill", colors: [.orange.opacity(0.75), .yellow.opacity(0.68)]),
-        Recipe(name: "胡萝卜土豆泥", categories: ["蔬菜"], count: 6, last: "2024-05-15", days: 15, symbol: "carrot.fill", colors: [.orange.opacity(0.8), .pink.opacity(0.55)])
-    ]
-    static let recipes = recommendations + [
-        Recipe(name: "紫薯山药泥", categories: ["水果"], count: 4, last: "2024-04-28", days: 37, symbol: "circle.fill", colors: [.purple.opacity(0.7), .pink.opacity(0.5)]),
-        Recipe(name: "胡萝卜牛肉丸", categories: ["肉食"], count: 1, last: "2024-04-10", days: 55, symbol: "circle.hexagongrid.fill", colors: [.red.opacity(0.7), .orange.opacity(0.5)])
-    ]
-
-    static func frequentlyRecordedRecipes(from recipes: [Recipe], limit: Int = 3) -> [Recipe] {
-        Array(recipes.sorted {
-            $0.count == $1.count ? $0.last > $1.last : $0.count > $1.count
-        }.prefix(limit))
+    init(id: UUID = UUID(), name: String, categories: [String], count: Int, last: String, days: Int, symbol: String, iconID: String = FoodIconCatalog.defaultID, colorHexA: String, colorHexB: String) {
+        self.id = id; self.name = name; self.categories = categories; self.count = count; self.last = last; self.days = days; self.symbol = symbol; self.iconID = iconID; self.colorHexA = colorHexA; self.colorHexB = colorHexB
     }
 }
 
 struct MealDish: Identifiable {
-    let name: String; let symbol: String; let colors: [Color]; let reaction: Reaction
-    var id: String { name }
+    let id: UUID
+    let name: String
+    let symbol: String
+    let iconID: String
+    let colorHexA: String
+    let colorHexB: String
+    var reaction: Reaction
+    var colors: [Color] { [Color(hex: colorHexA), Color(hex: colorHexB)] }
+
+    init(id: UUID = UUID(), name: String, symbol: String, iconID: String = FoodIconCatalog.defaultID, colorHexA: String, colorHexB: String, reaction: Reaction) {
+        self.id = id; self.name = name; self.symbol = symbol; self.iconID = iconID; self.colorHexA = colorHexA; self.colorHexB = colorHexB; self.reaction = reaction
+    }
 }
 
-enum MealDishFixtures {
-    static let breakfast = [
-        MealDish(name: "南瓜小米粥", symbol: "bowl.fill", colors: [.orange.opacity(0.75), .yellow.opacity(0.68)], reaction: .like),
-        MealDish(name: "蒸蛋黄", symbol: "circle.fill", colors: [.yellow.opacity(0.75), .orange.opacity(0.45)], reaction: .neutral),
-        MealDish(name: "苹果泥", symbol: "apple.logo", colors: [.pink.opacity(0.75), .red.opacity(0.48)], reaction: .like)
-    ]
-    static let lunch = [
-        MealDish(name: "西兰花鸡肉小软饼", symbol: "leaf.fill", colors: [.green.opacity(0.72), .yellow.opacity(0.72)], reaction: .like),
-        MealDish(name: "胡萝卜土豆泥", symbol: "carrot.fill", colors: [.orange.opacity(0.8), .pink.opacity(0.55)], reaction: .neutral),
-        MealDish(name: "番茄泥", symbol: "circle.fill", colors: [.red.opacity(0.7), .orange.opacity(0.5)], reaction: .like)
-    ]
+/// Identifiable payload used to present the record sheet (new or editing an existing record).
+struct RecordSeed: Identifiable {
+    let id: UUID
+    let form: MealRecordForm
+}
+
+private struct IconEditTarget: Identifiable {
+    let id = UUID()
+    let dishID: UUID?
+    let recipeID: UUID
+}
+
+private enum HomeOverviewDestination: Identifiable, Equatable {
+    case watch, longAgo
+
+    var id: String {
+        switch self {
+        case .watch: return "watch"
+        case .longAgo: return "longAgo"
+        }
+    }
 }
 
 struct RootView: View {
+    @Environment(DiaryStore.self) private var store
+    let consumeLaunchQuickAction: () -> Bool
     @State private var tab: AppTab = .home
-    @State private var isRecording = false
+    @State private var recordSeed: RecordSeed?
+    @State private var selectedRecipe: Recipe?
+    @State private var overviewDestination: HomeOverviewDestination?
     @State private var isSettingsPresented = false
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Group {
                 switch tab {
-                case .home: HomeView { isSettingsPresented = true }
-                case .recipes: RecipeLibraryView()
+                case .home:
+                    HomeView(
+                        showSettings: { isSettingsPresented = true },
+                        onRecipeTap: { selectedRecipe = $0 },
+                        onShowWatch: { overviewDestination = .watch },
+                        onShowLongAgo: { overviewDestination = .longAgo },
+                        onShowHistory: { tab = .history }
+                    )
+                case .recipes: RecipeLibraryView(onRecipeTap: { selectedRecipe = $0 })
                 case .analysis: AnalysisView()
                 case .history: HistoryView()
                 }
             }
-            FloatingTabBar(tab: $tab) { isRecording = true }
+            FloatingTabBar(tab: tab, select: selectTab) { recordSeed = RecordSeed(id: UUID(), form: .blank) }
         }
-        .sheet(isPresented: $isRecording) { MealRecordView() }
+        .sheet(item: $recordSeed) { seed in MealRecordView(form: seed.form) }
+        .sheet(item: $overviewDestination) { destination in
+            RecipeOverviewSheet(destination: destination)
+        }
+        .fullScreenCover(item: $selectedRecipe) { recipe in
+            RecipeDetailView(
+                recipe: recipe,
+                onRecord: {
+                    selectedRecipe = nil
+                    DispatchQueue.main.async {
+                        recordSeed = RecordSeed(id: UUID(), form: .prefill(recipe: recipe))
+                    }
+                },
+                onViewHistory: {
+                    selectedRecipe = nil
+                    tab = .history
+                }
+            )
+        }
         .fullScreenCover(isPresented: $isSettingsPresented) { SettingsView() }
+        .onAppear {
+            guard consumeLaunchQuickAction() else { return }
+            openRecordFromQuickAction()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .recordMealQuickAction)) { _ in
+            _ = consumeLaunchQuickAction()
+            openRecordFromQuickAction()
+        }
+    }
+
+    private func selectTab(_ newTab: AppTab) {
+        tab = newTab
+    }
+
+    private func openRecordFromQuickAction() {
+        selectedRecipe = nil
+        overviewDestination = nil
+        isSettingsPresented = false
+        DispatchQueue.main.async {
+            recordSeed = RecordSeed(id: UUID(), form: .blank)
+        }
     }
 }
 
@@ -103,11 +261,92 @@ struct ApricotCard<Content: View>: View {
 
 struct FoodThumbnail: View {
     let recipe: Recipe; var size: CGFloat = 60
-    var body: some View { Image(systemName: recipe.symbol).font(.system(size: size * 0.38, weight: .semibold)).foregroundStyle(.white.opacity(0.92)).frame(width: size, height: size).background(LinearGradient(colors: recipe.colors, startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: size * 0.24)).apricotElevation(.control) }
+    var body: some View { FoodIconThumbnail(iconID: recipe.iconID, symbol: recipe.symbol, colors: recipe.colors, size: size) }
+}
+
+struct FoodIconThumbnail: View {
+    let iconID: String; let symbol: String; let colors: [Color]; var size: CGFloat = 60
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+            if UIImage(named: iconID) != nil {
+                Image(iconID).resizable().scaledToFit().padding(size * 0.15)
+            } else {
+                Image(systemName: symbol).font(.system(size: size * 0.38, weight: .semibold)).foregroundStyle(.white.opacity(0.92))
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: size * 0.24))
+        .apricotElevation(.control)
+    }
+}
+
+/// Baby avatar: shows the chosen photo, or the warm-orange gradient (optionally with a fallback symbol) when none is set.
+struct BabyAvatar: View {
+    let data: Data?
+    var size: CGFloat
+    var cornerRadius: CGFloat
+    var fallbackSymbol: String? = nil
+    var body: some View {
+        Group {
+            if let data, let image = UIImage(data: data) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                LinearGradient(colors: [.orange.opacity(0.62), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .overlay {
+                        if let fallbackSymbol {
+                            Image(systemName: fallbackSymbol)
+                                .font(.system(size: size * 0.48, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.92))
+                        }
+                    }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
 }
 
 struct Pill: View {
     let text: String; var color: Color = AppTheme.primary; var body: some View { Text(text).font(.caption2.weight(.bold)).foregroundStyle(color).padding(.horizontal, 9).padding(.vertical, 5).background(color.opacity(0.13)).clipShape(Capsule()).apricotElevation(.control) }
+}
+
+struct AnimatedNumberText: View {
+    let value: Int
+    let suffix: String
+    let font: Font
+    let color: Color
+    var delay: Double = 0
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var displayedValue = 0
+    @State private var hasAppeared = false
+
+    var body: some View {
+        Text("\(displayedValue)\(suffix)")
+            .font(font)
+            .monospacedDigit()
+            .foregroundStyle(color)
+            .contentTransition(.numericText(value: Double(displayedValue)))
+            .onAppear { animateInitialValue() }
+            .onChange(of: value) { _, newValue in
+                guard hasAppeared else { return }
+                if reduceMotion {
+                    displayedValue = newValue
+                } else {
+                    withAnimation(.easeOut(duration: 0.42)) { displayedValue = newValue }
+                }
+            }
+    }
+
+    private func animateInitialValue() {
+        guard !hasAppeared else { return }
+        hasAppeared = true
+        guard !reduceMotion else { displayedValue = value; return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            withAnimation(.easeOut(duration: 0.48)) { displayedValue = value }
+        }
+    }
 }
 
 struct PageTitle: View {
@@ -116,17 +355,81 @@ struct PageTitle: View {
 }
 
 struct HomeView: View {
+    @Environment(DiaryStore.self) private var store
     let showSettings: () -> Void
+    let onRecipeTap: (Recipe) -> Void
+    let onShowWatch: () -> Void
+    let onShowLongAgo: () -> Void
+    let onShowHistory: () -> Void
+
+    @State private var refreshRotation: Double = 0
+    @State private var shuffledRecommendations: [Recipe] = []
+
+    private var displayedRecommendations: [Recipe] {
+        shuffledRecommendations.isEmpty ? store.recommendations : shuffledRecommendations
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) { VStack(spacing: 17) {
-            HStack { VStack(alignment: .leading, spacing: 3) { Text("7月10日 周四").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text("泡泡的辅食日记").font(.system(size: 21, weight: .bold)).foregroundStyle(AppTheme.ink) }; Spacer(); Button(action: showSettings) { Label("设置", systemImage: "gearshape").labelStyle(.iconOnly).font(.body.weight(.semibold)).foregroundStyle(AppTheme.ink).frame(width: 44, height: 44).background(.white).clipShape(RoundedRectangle(cornerRadius: 15)).apricotElevation(.control) }.accessibilityLabel("设置") }
-            HStack(spacing: 14) { RoundedRectangle(cornerRadius: 18).fill(LinearGradient(colors: [.orange.opacity(0.62), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing)).frame(width: 52, height: 52).apricotElevation(.primary); VStack(alignment: .leading, spacing: 7) { Text("泡泡").font(.title3.bold()); HStack(spacing: 6) { Pill(text: "10个月20天", color: AppTheme.warning); Pill(text: "男宝", color: .pink) } }; Spacer(); Image(systemName: "sun.max").font(.title2).foregroundStyle(.yellow) }.padding(16).background(LinearGradient(colors: [AppTheme.warmSurface, .yellow.opacity(0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: 22)).apricotElevation(.card)
-            HStack { Text("今日概览").font(.headline); Spacer(); Text("2024年5月20日 ›").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk) }
-            HStack(spacing: 10) { Metric(title: "重点观察", value: "无", color: AppTheme.secondaryInk); Metric(title: "好久没吃", value: "3 道", color: AppTheme.success); Metric(title: "已记录", value: "1 餐", color: AppTheme.primary) }
-            HStack { Text("好久没吃的菜谱").font(.headline); Spacer(); Label("换一换", systemImage: "arrow.clockwise").font(.caption.weight(.bold)).foregroundStyle(AppTheme.primary) }
-            ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 11) { ForEach(DemoData.recommendations) { recipe in VStack(alignment: .leading, spacing: 7) { HomeRecipeThumbnail(recipe: recipe); Text(recipe.name).font(.subheadline.bold()).lineLimit(2); Text("已 \(recipe.days) 天未吃").font(.caption.weight(.medium)).foregroundStyle(AppTheme.secondaryInk); Pill(text: "✓ 安全复吃", color: AppTheme.success) }.frame(width: 148, alignment: .leading).padding(10).background(.white).clipShape(RoundedRectangle(cornerRadius: 19)).apricotElevation(.card) } }.padding(.vertical, 2) }
-            ApricotCard { HStack { Image(systemName: "leaf").foregroundStyle(AppTheme.success).frame(width: 42, height: 42).background(AppTheme.success.opacity(0.13)).clipShape(RoundedRectangle(cornerRadius: 14)); VStack(alignment: .leading) { Text("重点观察").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text("这几天没有需要特别观察的食材").font(.subheadline.weight(.semibold)) }; Spacer() } }
+            HStack { VStack(alignment: .leading, spacing: 3) { Text(store.todayLabel).font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text("\(store.baby.name)的辅食日记").font(.system(size: 21, weight: .bold)).foregroundStyle(AppTheme.ink) }; Spacer(); Button(action: showSettings) { Label("设置", systemImage: "gearshape").labelStyle(.iconOnly).font(.body.weight(.semibold)).foregroundStyle(AppTheme.ink).frame(width: 44, height: 44).background(.white).clipShape(RoundedRectangle(cornerRadius: 15)).apricotElevation(.control) }.accessibilityLabel("设置") }
+            HStack(spacing: 14) { BabyAvatar(data: store.baby.avatarData, size: 52, cornerRadius: 18).apricotElevation(.primary); VStack(alignment: .leading, spacing: 7) { Text(store.baby.name).font(.title3.bold()); HStack(spacing: 6) { Pill(text: store.baby.ageText, color: AppTheme.warning); Pill(text: store.baby.gender, color: .pink) } }; Spacer(); TimelineView(.periodic(from: .now, by: 60)) { context in let currentMeal = MealPeriod.inferred(at: context.date); Image(systemName: currentMeal.symbol).font(.title2).foregroundStyle(currentMeal.color).accessibilityLabel("当前餐次：\(currentMeal.rawValue)") } }.padding(16).background(LinearGradient(colors: [AppTheme.warmSurface, .yellow.opacity(0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: 22)).apricotElevation(.card)
+            HStack { Text("今日概览").font(.headline); Spacer(); Text("\(store.overviewDateLabel) ›").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk) }
+            HStack(spacing: 10) {
+                Button(action: onShowWatch) { Metric(title: "重点观察", value: store.todayMetrics.watchText, color: AppTheme.secondaryInk) }
+                Button(action: onShowLongAgo) { Metric(title: "好久没吃", value: store.todayMetrics.longAgoText, color: AppTheme.success) }
+                Button(action: onShowHistory) { Metric(title: "已记录", value: store.todayMetrics.recordedText, color: AppTheme.primary) }
+            }
+            .buttonStyle(.plain)
+            HStack { Text("好久没吃的菜谱").font(.headline); Spacer(); Button { shuffleRecommendations() } label: { HStack(spacing: 3) { Image(systemName: "arrow.clockwise").font(.caption.weight(.bold)).rotationEffect(.degrees(refreshRotation)); Text("换一换").font(.caption.weight(.bold)) }.foregroundStyle(AppTheme.primary) }.buttonStyle(.plain) }
+            if displayedRecommendations.isEmpty {
+                Text("暂无推荐，菜谱记录满 14 天后会在这里提醒复吃").font(.subheadline).foregroundStyle(AppTheme.secondaryInk).frame(maxWidth: .infinity).padding(.vertical, 22)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 11) { ForEach(displayedRecommendations) { recipe in recommendationCard(recipe) }.padding(.vertical, 2) } }
+            }
+            HStack { Text("重点观察").font(.headline); Spacer(); if !store.watchEntries.isEmpty { Text("\(store.watchEntries.count) 种").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.warning) } }
+            if store.watchEntries.isEmpty {
+                ApricotCard { HStack { Image(systemName: "leaf").foregroundStyle(AppTheme.success).frame(width: 42, height: 42).background(AppTheme.success.opacity(0.13)).clipShape(RoundedRectangle(cornerRadius: 14)); VStack(alignment: .leading) { Text("重点观察").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text("这几天没有需要特别观察的食材").font(.subheadline.weight(.semibold)) }; Spacer() } }
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 11) { ForEach(store.watchEntries) { entry in watchCard(entry) }.padding(.vertical, 2) } }
+            }
         }.padding(.horizontal, 17).padding(.top, 12).padding(.bottom, 108) }.background(AppTheme.background)
+        .animation(.easeInOut(duration: 0.3), value: displayedRecommendations.map(\.id))
+    }
+
+    private func shuffleRecommendations() {
+        let base = store.recommendations
+        if base.count > 1 {
+            var candidate = base.shuffled()
+            while candidate.map(\.id) == base.map(\.id) {
+                candidate = base.shuffled()
+            }
+            shuffledRecommendations = candidate
+        }
+        withAnimation(.easeInOut(duration: 0.5)) { refreshRotation += 360 }
+    }
+
+    @ViewBuilder
+    private func recommendationCard(_ recipe: Recipe) -> some View {
+        Button { onRecipeTap(recipe) } label: {
+            VStack(alignment: .leading, spacing: 7) {
+                HomeRecipeThumbnail(recipe: recipe)
+                Text(recipe.name).font(.subheadline.bold()).lineLimit(2)
+                Text("已 \(recipe.days) 天未吃").font(.caption.weight(.medium)).foregroundStyle(AppTheme.secondaryInk)
+                Pill(text: "✓ 安全复吃", color: AppTheme.success)
+            }
+            .frame(width: 148, alignment: .leading).padding(10).background(.white).clipShape(RoundedRectangle(cornerRadius: 19)).apricotElevation(.card)
+        }.buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func watchCard(_ entry: WatchEntry) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HomeRecipeThumbnail(recipe: entry.recipe)
+            Text(entry.recipe.name).font(.subheadline.bold()).lineLimit(2)
+            Text("\(entry.hoursAgo) 小时前 · \(entry.lastReaction.title)").font(.caption.weight(.medium)).foregroundStyle(AppTheme.secondaryInk)
+            Pill(text: entry.lastReaction == .allergy ? "需观察" : "观察中", color: entry.lastReaction == .allergy ? AppTheme.danger : AppTheme.warning)
+        }
+        .frame(width: 148, alignment: .leading).padding(10).background(.white).clipShape(RoundedRectangle(cornerRadius: 19)).apricotElevation(.card)
     }
 }
 
@@ -135,43 +438,447 @@ struct HomeRecipeThumbnail: View {
     var body: some View { Image(systemName: recipe.symbol).font(.system(size: 29, weight: .semibold)).foregroundStyle(.white.opacity(0.78)).frame(maxWidth: .infinity).frame(height: 80).background(LinearGradient(colors: recipe.colors, startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: 14)) }
 }
 
-struct Metric: View { let title: String; let value: String; let color: Color; var body: some View { VStack(spacing: 5) { Text(title).font(.caption2.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(color) }.frame(maxWidth: .infinity).padding(.vertical, 13).padding(.horizontal, 6).background(title == "好久没吃" ? LinearGradient(colors: [.white, AppTheme.warmSurface], startPoint: .topLeading, endPoint: .bottomTrailing) : LinearGradient(colors: [.white, .white], startPoint: .top, endPoint: .bottom)).clipShape(RoundedRectangle(cornerRadius: 22)).apricotElevation(.card) } }
+struct Metric: View {
+    let title: String
+    let value: String
+    let color: Color
+
+    private var number: Int? { Int(value.prefix(while: { $0.isNumber })) }
+    private var suffix: String { String(value.drop(while: { $0.isNumber })) }
+
+    var body: some View {
+        VStack(spacing: 5) {
+            Text(title).font(.caption2.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
+            if let number {
+                AnimatedNumberText(value: number, suffix: suffix, font: .system(size: 20, weight: .bold), color: color)
+            } else {
+                Text(value).font(.system(size: 20, weight: .bold)).foregroundStyle(color)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 13)
+        .padding(.horizontal, 6)
+        .background(title == "好久没吃" ? LinearGradient(colors: [.white, AppTheme.warmSurface], startPoint: .topLeading, endPoint: .bottomTrailing) : LinearGradient(colors: [.white, .white], startPoint: .top, endPoint: .bottom))
+        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .apricotElevation(.card)
+    }
+}
+
+private struct RecipeOverviewSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(DiaryStore.self) private var store
+    let destination: HomeOverviewDestination
+
+    private var title: String { destination == .watch ? "重点观察" : "好久没吃" }
+    private var description: String {
+        destination == .watch
+            ? "新菜谱或出现异常反应后的 72 小时内，建议持续留意宝宝状态。"
+            : "已超过 14 天未食用，且最近无过敏记录的菜谱。可少量搭配熟悉菜谱重新尝试。"
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.secondaryInk)
+                        .padding(14)
+                        .background(AppTheme.warmSurface.opacity(0.72))
+                        .clipShape(RoundedRectangle(cornerRadius: 17))
+
+                    if destination == .watch {
+                        watchContent
+                    } else {
+                        longAgoContent
+                    }
+                }
+                .padding(17)
+            }
+            .background(AppTheme.background)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }.foregroundStyle(AppTheme.primary)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    @ViewBuilder
+    private var watchContent: some View {
+        if store.watchEntries.isEmpty {
+            overviewEmptyState(icon: "leaf", text: "这几天没有需要特别观察的食材")
+        } else {
+            ForEach(store.watchEntries) { entry in
+                ApricotCard {
+                    HStack(spacing: 12) {
+                        FoodThumbnail(recipe: entry.recipe, size: 52)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(entry.recipe.name).font(.subheadline.bold())
+                            Text("\(entry.hoursAgo) 小时前记录 · \(entry.lastReaction.title)")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(AppTheme.secondaryInk)
+                            Pill(text: entry.lastReaction == .allergy ? "需观察" : "观察中", color: entry.lastReaction == .allergy ? AppTheme.danger : AppTheme.warning)
+                        }
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var longAgoContent: some View {
+        if store.recommendations.isEmpty {
+            overviewEmptyState(icon: "clock", text: "暂无超过 14 天未食用的菜谱")
+        } else {
+            ForEach(store.recommendations) { recipe in
+                ApricotCard {
+                    HStack(spacing: 12) {
+                        FoodThumbnail(recipe: recipe, size: 52)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(recipe.name).font(.subheadline.bold())
+                            Text("上次记录：\(recipe.last)")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(AppTheme.secondaryInk)
+                            Pill(text: "已 \(recipe.days) 天未吃", color: AppTheme.success)
+                        }
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+
+    private func overviewEmptyState(icon: String, text: String) -> some View {
+        ContentUnavailableView {
+            Label(title, systemImage: icon)
+        } description: {
+            Text(text)
+        }
+        .frame(maxWidth: .infinity, minHeight: 230)
+    }
+}
 
 struct RecipeLibraryView: View {
-    var body: some View { ScrollView(showsIndicators: false) { VStack(spacing: 12) { PageTitle(title: "菜谱库"); HStack { Image(systemName: "magnifyingglass").foregroundStyle(AppTheme.secondaryInk); Text("搜索食材或菜谱").font(.subheadline).foregroundStyle(AppTheme.secondaryInk); Spacer() }.padding(14).background(.white).clipShape(RoundedRectangle(cornerRadius: 18)).apricotElevation(.control); ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 8) { ForEach(["全部", "主食", "肉食", "蔬菜", "水果"], id: \.self) { label in Text(label).font(.subheadline.bold()).foregroundStyle(label == "全部" ? .white : AppTheme.secondaryInk).padding(.horizontal, 14).padding(.vertical, 8).background(label == "全部" ? AppTheme.primary : .white).clipShape(Capsule()).apricotElevation(.control) } } }; HStack(spacing: 5) { Text("按记录次数").font(.subheadline).foregroundStyle(AppTheme.ink); Image(systemName: "chevron.down").font(.caption.bold()).foregroundStyle(AppTheme.primary); Spacer(); Label("排序", systemImage: "line.3.horizontal.decrease").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk) }; ForEach(DemoData.recipes) { recipe in ApricotCard { HStack(spacing: 12) { FoodThumbnail(recipe: recipe); VStack(alignment: .leading, spacing: 5) { Text(recipe.name).font(.subheadline.bold()); HStack { ForEach(recipe.categories, id: \.self) { Pill(text: $0, color: $0 == "肉食" ? .pink : AppTheme.warning) } }; Text("已记录 \(recipe.count) 次 · 上次 \(recipe.last)").font(.caption2.weight(.medium)).foregroundStyle(AppTheme.secondaryInk) }; Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(AppTheme.secondaryInk) } }.padding(0) } }.padding(.horizontal, 17).padding(.bottom, 108) }.background(AppTheme.background) }
+    @Environment(DiaryStore.self) private var store
+    let onRecipeTap: (Recipe) -> Void
+    @State private var searchText = ""
+    @State private var category = "全部"
+    @State private var sortField: RecipeSort = .byCount
+    @State private var sortAscending = false
+    private let categories = ["全部", "主食", "肉食", "蔬菜", "水果"]
+    var body: some View { ScrollView(showsIndicators: false) { VStack(spacing: 12) { PageTitle(title: "菜谱库"); HStack { Image(systemName: "magnifyingglass").foregroundStyle(AppTheme.secondaryInk); TextField("搜索食材或菜谱", text: $searchText).font(.subheadline).foregroundStyle(AppTheme.ink); Spacer() }.padding(14).background(.white).clipShape(RoundedRectangle(cornerRadius: 18)).apricotElevation(.control); ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 8) { ForEach(categories, id: \.self) { label in Button { category = label } label: { Text(label).font(.subheadline.bold()).foregroundStyle(label == category ? .white : AppTheme.secondaryInk).padding(.horizontal, 14).padding(.vertical, 8).background(label == category ? AppTheme.primary : .white).clipShape(Capsule()).apricotElevation(.control) }.buttonStyle(.plain) } } }; HStack(spacing: 5) { Button { sortField = (sortField == .byCount) ? .byLastRecorded : .byCount } label: { HStack(spacing: 4) { Text(sortField.title).font(.subheadline.weight(.semibold)).foregroundStyle(AppTheme.ink); Image(systemName: "arrow.up.arrow.down").font(.caption2.weight(.bold)).foregroundStyle(AppTheme.primary) }.padding(.horizontal, 8).padding(.vertical, 4).background(AppTheme.warmSurface.opacity(0.6)).clipShape(RoundedRectangle(cornerRadius: 10)).contentShape(Rectangle()) }.buttonStyle(.plain); Spacer(); Button { sortAscending.toggle() } label: { HStack(spacing: 4) { Image(systemName: sortAscending ? "arrow.up" : "arrow.down").font(.caption.weight(.bold)).foregroundStyle(.white).frame(width: 20, height: 20).background(AppTheme.primary).clipShape(RoundedRectangle(cornerRadius: 6)); Text("排序").font(.caption.weight(.semibold)).foregroundStyle(sortAscending ? AppTheme.primary : AppTheme.secondaryInk) }.padding(.horizontal, 8).padding(.vertical, 4).background(sortAscending ? AppTheme.primary.opacity(0.12) : AppTheme.warmSurface.opacity(0.6)).clipShape(RoundedRectangle(cornerRadius: 10)).contentShape(Rectangle()) }.buttonStyle(.plain) }; ForEach(store.libraryRecipes(search: searchText, category: category, sort: sortField, ascending: sortAscending)) { recipe in Button { onRecipeTap(recipe) } label: { ApricotCard { HStack(spacing: 12) { FoodThumbnail(recipe: recipe); VStack(alignment: .leading, spacing: 5) { Text(recipe.name).font(.subheadline.bold()); HStack { ForEach(recipe.categories, id: \.self) { Pill(text: $0, color: $0 == "肉食" ? .pink : AppTheme.warning) } }; HStack(spacing: 0) { Text("已记录 "); Text("\(recipe.count)").fontWeight(.bold).foregroundStyle(AppTheme.primary); Text(" 次 · 上次 \(recipe.last)") }.font(.caption2.weight(.medium)).foregroundStyle(AppTheme.secondaryInk) }; Spacer(); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(AppTheme.secondaryInk) } }.padding(0) }.buttonStyle(.plain) } }.padding(.horizontal, 17).padding(.bottom, 108) }.background(AppTheme.background) }
+}
+
+struct RecipeDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(DiaryStore.self) private var store
+    let recipe: Recipe
+    let onRecord: () -> Void
+    let onViewHistory: () -> Void
+    @State private var iconEditTarget: IconEditTarget?
+
+    private var currentRecipe: Recipe { store.recipes.first(where: { $0.id == recipe.id }) ?? recipe }
+
+    private var detail: RecipeDetailVM {
+        store.recipeDetails[recipe.id] ?? RecipeDetailVM(
+            recipe: recipe,
+            firstRecordedAt: nil,
+            lastRecordedAt: nil,
+            latestReaction: nil,
+            isInObservation: false,
+            occurrences: []
+        )
+    }
+
+    private var status: (text: String, color: Color) {
+        if detail.isInObservation { return ("观察中", AppTheme.warning) }
+        if detail.latestReaction == .allergy { return ("需谨慎观察", AppTheme.danger) }
+        if recipe.count == 0 { return ("新菜谱", AppTheme.warning) }
+        if recipe.days >= 14 { return ("适合少量重新尝试", AppTheme.success) }
+        return ("适合继续记录", AppTheme.success)
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 20) {
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(AppTheme.primary)
+                            .frame(width: 44, height: 44)
+                            .background(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                            .apricotElevation(.control)
+                    }
+                    .accessibilityLabel("返回菜谱库")
+                    Spacer()
+                    Pill(text: status.text, color: status.color)
+                }
+
+                VStack(spacing: 10) {
+                    Button { iconEditTarget = IconEditTarget(dishID: nil, recipeID: currentRecipe.id) } label: {
+                        FoodThumbnail(recipe: currentRecipe, size: 112)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("修改\(currentRecipe.name)图标")
+                    Text(recipe.name).font(.system(size: 29, weight: .bold)).multilineTextAlignment(.center)
+                    Text(recipe.categories.isEmpty ? "自定义菜谱" : recipe.categories.joined(separator: " · "))
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppTheme.secondaryInk)
+                }
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 11) {
+                    RecipeDetailMetric(title: "上次记录", value: dateText(detail.lastRecordedAt), subtitle: lastSubtitle)
+                    RecipeDetailMetric(title: "记录次数", value: "\(recipe.count) 次", subtitle: reactionSubtitle)
+                    RecipeDetailMetric(title: "首次记录", value: dateText(detail.firstRecordedAt), subtitle: nil)
+                    RecipeDetailMetric(title: "观察期", value: detail.isInObservation ? "观察中" : "已结束", subtitle: detail.isInObservation ? "持续留意宝宝状态" : "暂无近期观察")
+                }
+
+                if !detail.occurrences.isEmpty {
+                    detailSection(title: "最近反应") {
+                        VStack(spacing: 0) {
+                            ForEach(Array(detail.occurrences.prefix(3).enumerated()), id: \.element.id) { index, occurrence in
+                                RecipeOccurrenceRow(occurrence: occurrence)
+                                if index < min(detail.occurrences.count, 3) - 1 { Divider().overlay(AppTheme.warmSurface) }
+                            }
+                        }
+                    }
+
+                    detailSection(title: "近期出现在") {
+                        let occurrence = detail.occurrences[0]
+                        HStack {
+                            Text(occurrence.meal).font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Text(dateText(occurrence.date)).font(.subheadline.weight(.bold))
+                        }
+                    }
+                } else {
+                    detailSection(title: "记录情况") {
+                        Text("还没有记录过这道菜谱，准备好后可以记录今天做了什么。")
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.secondaryInk)
+                    }
+                }
+            }
+            .padding(.horizontal, 17)
+            .padding(.top, 14)
+            .padding(.bottom, 124)
+        }
+        .background(AppTheme.background)
+        .sheet(item: $iconEditTarget) { target in
+            FoodIconPickerSheet(selectedID: currentRecipe.iconID) { icon in
+                store.updateRecipeIcon(id: target.recipeID, iconID: icon.id)
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            HStack(spacing: 11) {
+                Button(action: onViewHistory) {
+                    Text("查看历史记录").font(.headline).foregroundStyle(AppTheme.primary)
+                        .frame(maxWidth: .infinity).padding(.vertical, 15)
+                        .background(.white)
+                        .overlay { RoundedRectangle(cornerRadius: 17).stroke(AppTheme.primary.opacity(0.52), lineWidth: 1.4) }
+                        .clipShape(RoundedRectangle(cornerRadius: 17))
+                }
+                Button(action: onRecord) {
+                    Text("记录今天做了").font(.headline).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).padding(.vertical, 15)
+                        .background(LinearGradient(colors: [.orange.opacity(0.72), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .clipShape(RoundedRectangle(cornerRadius: 17))
+                        .apricotElevation(.primary)
+                }
+            }
+            .padding(.horizontal, 17)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
+            .background(AppTheme.background.opacity(0.96))
+        }
+    }
+
+    private var lastSubtitle: String {
+        guard detail.lastRecordedAt != nil else { return "尚未记录" }
+        return recipe.days == 0 ? "今天" : "已 \(recipe.days) 天"
+    }
+
+    private var reactionSubtitle: String {
+        guard let reaction = detail.latestReaction else { return "等待第一次记录" }
+        return "最近：\(reaction.title)"
+    }
+
+    @ViewBuilder
+    private func detailSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(title).font(.title3.bold())
+            ApricotCard { content() }
+        }
+    }
+
+    private func dateText(_ date: Date?) -> String {
+        guard let date else { return "—" }
+        return Self.dateFormatter.string(from: date)
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "MM月dd日"
+        return formatter
+    }()
+}
+
+private struct RecipeDetailMetric: View {
+    let title: String
+    let value: String
+    let subtitle: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
+            Text(value).font(.system(size: 22, weight: .bold)).lineLimit(1).minimumScaleFactor(0.74)
+            if let subtitle { Text(subtitle).font(.caption.weight(.medium)).foregroundStyle(AppTheme.secondaryInk).lineLimit(1) }
+        }
+        .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
+        .padding(15)
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .apricotElevation(.card)
+    }
+}
+
+private struct RecipeOccurrenceRow: View {
+    let occurrence: RecipeOccurrence
+
+    var body: some View {
+        HStack {
+            Text(Self.dateFormatter.string(from: occurrence.date) + " · " + occurrence.meal)
+                .font(.subheadline.weight(.semibold))
+            Spacer()
+            Label(occurrence.reaction.title, systemImage: occurrence.reaction == .like ? "face.smiling" : "face.dashed")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(occurrence.reaction.color)
+        }
+        .padding(.vertical, 8)
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "MM月dd日"
+        return formatter
+    }()
 }
 
 struct AnalysisView: View {
-    var body: some View { ScrollView(showsIndicators: false) { VStack(spacing: 15) { PageTitle(title: "接受度分析", trailing: "筛选"); ApricotCard { VStack(spacing: 10) { Text("近14天（5.7-5.20）反应比例").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); ReactionRatioDonut(); HStack(spacing: 10) { Legend(text: "喜欢 64%·18", color: AppTheme.success); Legend(text: "一般 21%·6", color: AppTheme.warning); Legend(text: "拒绝 11%·3", color: AppTheme.danger); Legend(text: "过敏 4%·1", color: .purple) } } }.background(LinearGradient(colors: [.white, AppTheme.warmSurface.opacity(0.5)], startPoint: .top, endPoint: .bottom)).clipShape(RoundedRectangle(cornerRadius: 22)); HStack { Text("菜谱接受度排行榜").font(.headline); Spacer(); Text("更多").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk) }; AcceptanceRanking() }.padding(.horizontal, 17).padding(.bottom, 108) }.background(AppTheme.background) }
+    @Environment(DiaryStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var chartProgress: CGFloat = 0
+    @State private var timeFilter: RecordTimeFilter = .days14
+    private func legendText(_ title: String, reaction: Reaction, summary: AnalysisSummary) -> String {
+        let count = summary.counts[reaction] ?? 0
+        let percent = summary.total > 0 ? Int(Double(count) / Double(summary.total) * 100) : 0
+        return "\(title) \(percent)%·\(count)"
+    }
+    var body: some View {
+        let summary = store.analysis(for: timeFilter)
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 15) {
+                pageHeader(title: "接受度分析")
+                ApricotCard {
+                    VStack(spacing: 10) {
+                        Text(analysisDescription(summary: summary)).font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
+                        ReactionRatioDonut(summary: summary, progress: chartProgress)
+                        HStack(spacing: 10) { Legend(text: legendText("喜欢", reaction: .like, summary: summary), color: AppTheme.success); Legend(text: legendText("一般", reaction: .neutral, summary: summary), color: AppTheme.warning); Legend(text: legendText("拒绝", reaction: .refused, summary: summary), color: AppTheme.danger); Legend(text: legendText("过敏", reaction: .allergy, summary: summary), color: .purple) }
+                            .opacity(chartProgress)
+                    }
+                }
+                .background(LinearGradient(colors: [.white, AppTheme.warmSurface.opacity(0.5)], startPoint: .top, endPoint: .bottom))
+                .clipShape(RoundedRectangle(cornerRadius: 22))
+                Text("菜谱接受度排行榜").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                AcceptanceRanking(ranking: summary.ranking, emptyText: "\(timeFilter.title)暂无足够数据")
+            }
+            .padding(.horizontal, 17)
+            .padding(.bottom, 108)
+        }
+        .background(AppTheme.background)
+        .onAppear {
+            guard chartProgress == 0 else { return }
+            if reduceMotion {
+                chartProgress = 1
+            } else {
+                withAnimation(.easeOut(duration: 0.72)) { chartProgress = 1 }
+            }
+        }
+    }
+
+    private func analysisDescription(summary: AnalysisSummary) -> String {
+        timeFilter == .all ? "所有时间反应比例" : "\(timeFilter.title)（\(summary.rangeLabel)）反应比例"
+    }
+
+    private func pageHeader(title: String) -> some View {
+        HStack {
+            Text(title).font(.system(size: 23, weight: .bold)).foregroundStyle(AppTheme.ink)
+            Spacer()
+            TimeFilterMenu(selection: $timeFilter)
+        }
+        .padding(.top, 8)
+    }
+}
+
+private struct TimeFilterMenu: View {
+    @Binding var selection: RecordTimeFilter
+
+    var body: some View {
+        Menu {
+            ForEach(RecordTimeFilter.allCases) { option in
+                Button { selection = option } label: {
+                    Label(option.title, systemImage: selection == option ? "checkmark" : "")
+                }
+            }
+        } label: {
+            Label(selection.title, systemImage: "line.3.horizontal.decrease.circle")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppTheme.secondaryInk)
+        }
+    }
 }
 
 struct Legend: View { let text: String; let color: Color; var body: some View { HStack(spacing: 3) { Circle().fill(color).frame(width: 7, height: 7); Text(text).font(.caption2.weight(.semibold)) } } }
 
 struct AcceptanceRanking: View {
-    private let rows: [(Recipe, String, Color)] = [
-        (DemoData.recipes[1], "89%", AppTheme.success),
-        (DemoData.recipes[0], "78%", AppTheme.success),
-        (DemoData.recipes[4], "67%", AppTheme.success),
-        (DemoData.recipes[3], "50%", AppTheme.warning)
-    ]
+    let ranking: [RankRow]
+    var emptyText: String = "暂无足够数据"
     var body: some View {
         ApricotCard {
             VStack(spacing: 0) {
-                ForEach(Array(rows.enumerated()), id: \.element.0.id) { index, row in
-                    HStack(spacing: 11) {
-                        Text("\(index + 1)")
-                            .font(.caption.bold())
-                            .foregroundStyle(index == 3 ? AppTheme.secondaryInk : .white)
-                            .frame(width: 24, height: 24)
-                            .background(index == 0 ? AppTheme.primary : index == 3 ? AppTheme.warmSurface : AppTheme.primary.opacity(0.56))
-                            .clipShape(RoundedRectangle(cornerRadius: 9))
-                        FoodThumbnail(recipe: row.0, size: 40)
-                        Text(row.0.name).font(.subheadline.bold()).lineLimit(1)
-                        Spacer(minLength: 4)
-                        Pill(text: row.1, color: row.2)
+                if ranking.isEmpty {
+                    Text(emptyText).font(.subheadline).foregroundStyle(AppTheme.secondaryInk).frame(maxWidth: .infinity).padding(.vertical, 18)
+                } else {
+                    ForEach(Array(ranking.enumerated()), id: \.element.id) { index, row in
+                        HStack(spacing: 11) {
+                            Text("\(index + 1)")
+                                .font(.caption.bold())
+                                .foregroundStyle(.white)
+                                .frame(width: 24, height: 24)
+                                .background(index == 0 ? AppTheme.primary : AppTheme.primary.opacity(0.56))
+                                .clipShape(RoundedRectangle(cornerRadius: 9))
+                            FoodThumbnail(recipe: row.recipe, size: 40)
+                            Text(row.recipe.name).font(.subheadline.bold()).lineLimit(1)
+                            Spacer(minLength: 4)
+                            AnimatedNumberText(value: row.percent, suffix: "%", font: .caption2.weight(.bold), color: row.color, delay: Double(index) * 0.07)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 5)
+                                .background(row.color.opacity(0.13))
+                                .clipShape(Capsule())
+                                .apricotElevation(.control)
+                        }
+                        .padding(.vertical, 9)
+                        if index < ranking.count - 1 { Divider().overlay(AppTheme.warmSurface) }
                     }
-                    .padding(.vertical, 9)
-                    if index < rows.count - 1 { Divider().overlay(AppTheme.warmSurface) }
                 }
             }
         }
@@ -180,52 +887,288 @@ struct AcceptanceRanking: View {
 }
 
 struct ReactionRatioDonut: View {
+    let summary: AnalysisSummary
+    let progress: CGFloat
     private let width: CGFloat = 21
+    private let segments: [(Reaction, Color)] = [(.like, AppTheme.success), (.neutral, AppTheme.warning), (.refused, AppTheme.danger), (.allergy, Color(red: 0.56, green: 0.42, blue: 0.72))]
+
+    private var slices: [(Double, Double, Color)] {
+        guard summary.total > 0 else { return [] }
+        let gap = 0.012
+        var start = 0.0
+        var result: [(Double, Double, Color)] = []
+        for index in segments.indices {
+            let reaction = segments[index].0
+            let count = summary.counts[reaction] ?? 0
+            guard count > 0 else { continue }
+            let frac = Double(count) / Double(summary.total)
+            let end = min(start + max(frac - gap, 0.004), 1)
+            result.append((start, end, segments[index].1))
+            start = min(end + gap, 1)
+            if start >= 1 { break }
+        }
+        return result
+    }
+
     var body: some View {
+        let total = summary.total
         ZStack {
             Circle().stroke(AppTheme.warmSurface, lineWidth: width)
-            Circle().trim(from: 0.000, to: 0.640).stroke(AppTheme.success, style: StrokeStyle(lineWidth: width, lineCap: .round)).rotationEffect(.degrees(-90))
-            Circle().trim(from: 0.650, to: 0.860).stroke(AppTheme.warning, style: StrokeStyle(lineWidth: width, lineCap: .round)).rotationEffect(.degrees(-90))
-            Circle().trim(from: 0.870, to: 0.980).stroke(AppTheme.danger, style: StrokeStyle(lineWidth: width, lineCap: .round)).rotationEffect(.degrees(-90))
-            Circle().trim(from: 0.990, to: 1.000).stroke(Color(red: 0.56, green: 0.42, blue: 0.72), style: StrokeStyle(lineWidth: width, lineCap: .round)).rotationEffect(.degrees(-90))
+            ForEach(Array(slices.enumerated()), id: \.offset) { _, slice in
+                Circle().trim(from: slice.0, to: slice.0 + (slice.1 - slice.0) * Double(progress)).stroke(slice.2, style: StrokeStyle(lineWidth: width, lineCap: .round)).rotationEffect(.degrees(-90))
+            }
             VStack(spacing: -2) {
-                Text("28").font(.system(size: 30, weight: .bold)).foregroundStyle(AppTheme.ink) + Text("餐").font(.subheadline.weight(.bold))
+                Text("\(total)").font(.system(size: 30, weight: .bold)).foregroundStyle(AppTheme.ink) + Text("餐").font(.subheadline.weight(.bold))
                 Text("总记录").font(.caption2.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
             }
         }
         .frame(width: 172, height: 172)
+        .scaleEffect(0.92 + 0.08 * progress)
+        .opacity(0.45 + 0.55 * progress)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("近14天反应比例：喜欢18餐，一般6餐，拒绝3餐，过敏1餐")
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accessibilityLabel: String {
+        let parts = segments.map { "\($0.0.title) \(summary.counts[$0.0] ?? 0) 餐" }.joined(separator: "，")
+        return "统计范围 \(summary.rangeLabel)，共 \(summary.total) 餐：" + parts
     }
 }
 
 struct HistoryView: View {
+    @Environment(DiaryStore.self) private var store
+    @State private var editingSeed: RecordSeed?
+    @State private var imagePreview: HistoryImagePreview?
+    @State private var weekAnchor: Date = .now
+    @State private var selectedDate: Date?
+    @State private var displayMode: HistoryDisplayMode = .recipe
+
+    private var displayedRecords: [HistoryRecordVM] {
+        if let selectedDate {
+            return store.historyRecords.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        }
+        return store.historyRecords(for: .days14)
+    }
+
+    private var emptyText: String {
+        selectedDate == nil ? "最近 14 天暂无记录" : "这一天还没有记录"
+    }
+
+    /// The right-arrow is only enabled when the displayed week is before the current week.
+    private var canGoNext: Bool {
+        let cal = Calendar.current
+        let thisWD = cal.component(.weekday, from: .now)
+        let thisMonday = cal.date(byAdding: .day, value: -(thisWD + 5) % 7, to: cal.startOfDay(for: .now))!
+        let anchorWD = cal.component(.weekday, from: weekAnchor)
+        let anchorMonday = cal.date(byAdding: .day, value: -(anchorWD + 5) % 7, to: cal.startOfDay(for: weekAnchor))!
+        return anchorMonday < thisMonday
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 14) {
-                PageTitle(title: "历史记录", trailing: "筛选")
-                HistoryCalendar()
-                HistoryRecordCard(date: "5月20日 周一", meal: "早餐", time: "08:30", dishes: MealDishFixtures.breakfast, overallReaction: .like, note: "吃得开心，胃口很好，便便正常。")
-                HistoryRecordCard(date: "5月19日 周日", meal: "午餐", time: "12:30", dishes: MealDishFixtures.lunch, overallReaction: .neutral, note: "少量打嗝，无其他不适。")
+                HStack {
+                    Text("历史记录")
+                        .font(.system(size: 23, weight: .bold))
+                        .foregroundStyle(AppTheme.ink)
+                    Spacer()
+                    HistoryDisplayModePicker(selection: $displayMode)
+                }
+                .padding(.top, 8)
+                HistoryCalendar(
+                    week: store.calendarWeek(anchor: weekAnchor, selected: selectedDate),
+                    onSelectDay: { date in
+                        if let selectedDate, Calendar.current.isDate(selectedDate, inSameDayAs: date) {
+                            self.selectedDate = nil
+                        } else {
+                            selectedDate = date
+                        }
+                    },
+                    onPrev: { weekAnchor = Calendar.current.date(byAdding: .day, value: -7, to: weekAnchor) ?? weekAnchor },
+                    onNext: { weekAnchor = Calendar.current.date(byAdding: .day, value: 7, to: weekAnchor) ?? weekAnchor },
+                    canGoNext: canGoNext
+                )
+                if displayMode == .recipe, displayedRecords.isEmpty {
+                    Text(emptyText).font(.subheadline).foregroundStyle(AppTheme.secondaryInk).frame(maxWidth: .infinity).padding(.vertical, 30)
+                } else if displayMode == .photos {
+                    HistoryPhotoGrid(records: displayedRecords) { record in
+                        guard let photoData = record.photoData else { return }
+                        imagePreview = HistoryImagePreview(
+                            photoData: photoData,
+                            livePhotoData: record.livePhotoData,
+                            livePhotoAssetIdentifier: record.livePhotoAssetIdentifier,
+                            livePhotoResourcesData: record.livePhotoResourcesData
+                        )
+                    }
+                } else {
+                    ForEach(displayedRecords) { vm in
+                        Button { editingSeed = RecordSeed(id: vm.id, form: store.form(forRecordID: vm.id) ?? .blank) } label: {
+                            HistoryRecordCard(
+                                date: vm.dateLabel,
+                                meal: vm.meal,
+                                time: vm.timeText,
+                                dishes: vm.dishes,
+                                overallReaction: vm.overallReaction,
+                                note: vm.note,
+                                photoData: vm.photoData,
+                                onPhotoTap: {
+                                    guard let photoData = vm.photoData else { return }
+                                    imagePreview = HistoryImagePreview(
+                                        photoData: photoData,
+                                        livePhotoData: vm.livePhotoData,
+                                        livePhotoAssetIdentifier: vm.livePhotoAssetIdentifier,
+                                        livePhotoResourcesData: vm.livePhotoResourcesData
+                                    )
+                                }
+                            )
+                        }.buttonStyle(.plain)
+                    }
+                }
             }
             .padding(.horizontal, 17)
             .padding(.bottom, 108)
         }
         .background(AppTheme.background)
+        .sheet(item: $editingSeed) { seed in MealRecordView(form: seed.form) }
+        .fullScreenCover(item: $imagePreview) { preview in
+            HistoryImagePreviewView(preview: preview)
+        }
     }
 }
 
+private enum HistoryDisplayMode: Equatable {
+    case recipe
+    case photos
+}
+
+private struct HistoryDisplayModePicker: View {
+    @Binding var selection: HistoryDisplayMode
+
+    var body: some View {
+        HStack(spacing: 4) {
+            modeButton(.recipe, icon: "rectangle.grid.1x2")
+            modeButton(.photos, icon: "photo.on.rectangle")
+        }
+        .padding(4)
+        .background(AppTheme.warmSurface.opacity(0.72))
+        .clipShape(Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("历史记录展示模式")
+    }
+
+    private func modeButton(_ mode: HistoryDisplayMode, icon: String) -> some View {
+        Button { selection = mode } label: {
+            Image(systemName: icon)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(selection == mode ? .white : AppTheme.secondaryInk)
+                .frame(width: 36, height: 30)
+                .background(selection == mode ? AppTheme.primary : .clear)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(mode == .recipe ? "图文模式" : "图片模式")
+        .accessibilityAddTraits(selection == mode ? .isSelected : [])
+    }
+}
+
+private struct HistoryPhotoGrid: View {
+    let records: [HistoryRecordVM]
+    let onSelect: (HistoryRecordVM) -> Void
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
+
+    private var photoRecords: [HistoryRecordVM] {
+        records.filter { record in
+            guard let data = record.photoData else { return false }
+            return UIImage(data: data) != nil
+        }
+    }
+
+    var body: some View {
+        if photoRecords.isEmpty {
+            ContentUnavailableView("暂无照片", systemImage: "photo.on.rectangle.angled", description: Text("记录一餐时添加的照片会显示在这里"))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 30)
+        } else {
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(photoRecords) { record in
+                    Button { onSelect(record) } label: {
+                        HistoryPhotoTile(record: record)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(record.dateLabel) \(record.meal) 的照片")
+                }
+            }
+        }
+    }
+}
+
+private struct HistoryPhotoTile: View {
+    let record: HistoryRecordVM
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            if let data = record.photoData, let image = UIImage(data: data) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            }
+            LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .center, endPoint: .bottom)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(record.dateLabel).font(.caption.weight(.bold))
+                Text("\(record.meal) · \(record.timeText)").font(.caption2.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .padding(10)
+        }
+        .overlay(alignment: .topTrailing) {
+            if record.livePhotoAssetIdentifier != nil || record.livePhotoData != nil {
+                Image(systemName: "livephoto")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(7)
+                    .background(.black.opacity(0.45))
+                    .clipShape(Circle())
+                    .padding(8)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .apricotElevation(.control)
+    }
+}
+
+private struct HistoryImagePreview: Identifiable {
+    let id = UUID()
+    let photoData: Data
+    let livePhotoData: Data?
+    let livePhotoAssetIdentifier: String?
+    let livePhotoResourcesData: Data?
+}
+
 struct HistoryCalendar: View {
+    let week: CalendarWeekVM
+    let onSelectDay: (Date) -> Void
+    let onPrev: () -> Void
+    let onNext: () -> Void
+    let canGoNext: Bool
     private let weekdays = ["一", "二", "三", "四", "五", "六", "日"]
-    private let dates = [13, 14, 15, 16, 17, 18, 19]
-    private let recordedDates: Set<Int> = [13, 16, 18]
     var body: some View {
         ApricotCard {
             VStack(spacing: 11) {
-                HStack { Text("2024年5月").font(.system(size: 17, weight: .bold)); Spacer(); Image(systemName: "chevron.left"); Image(systemName: "chevron.right") }.foregroundStyle(AppTheme.secondaryInk)
+                HStack {
+                    Text(week.monthLabel).font(.system(size: 17, weight: .bold)).foregroundStyle(AppTheme.ink)
+                    Spacer()
+                    Button(action: onPrev) { Image(systemName: "chevron.left").font(.subheadline.weight(.bold)) }.foregroundStyle(AppTheme.secondaryInk).buttonStyle(.plain)
+                    Button(action: onNext) { Image(systemName: "chevron.right").font(.subheadline.weight(.bold)) }.foregroundStyle(canGoNext ? AppTheme.secondaryInk : AppTheme.secondaryInk.opacity(0.32)).disabled(!canGoNext).buttonStyle(.plain)
+                }
                 HStack { ForEach(weekdays, id: \.self) { Text($0).font(.caption.weight(.bold)).foregroundStyle(AppTheme.secondaryInk.opacity(0.72)).frame(maxWidth: .infinity) } }
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 7), spacing: 7) {
-                    ForEach(dates, id: \.self) { date in CalendarDateCell(date: date, isRecorded: recordedDates.contains(date), isSelected: date == 19) }
+                    ForEach(week.days) { day in
+                        if let date = day.date {
+                            Button { onSelectDay(date) } label: { CalendarDateCell(day: day) }.buttonStyle(.plain)
+                        }
+                    }
                 }
             }
         }
@@ -233,35 +1176,56 @@ struct HistoryCalendar: View {
 }
 
 struct CalendarDateCell: View {
-    let date: Int; let isRecorded: Bool; let isSelected: Bool
+    let day: CalendarDay
+    private var textColor: Color {
+        if day.isSelected { return .white }
+        if !day.isCurrentMonth { return AppTheme.secondaryInk.opacity(0.4) }
+        if day.isToday { return AppTheme.primary }
+        return AppTheme.ink
+    }
+    private var indicatorColor: Color {
+        if day.isSelected { return .white.opacity(0.9) }
+        if day.isRecorded { return AppTheme.primary }
+        if day.isToday { return AppTheme.primary.opacity(0.4) }
+        return .clear
+    }
     var body: some View {
         VStack(spacing: 4) {
-            Text("\(date)").font(.subheadline.weight(.bold)).foregroundStyle(isSelected ? .white : (date > 21 ? AppTheme.secondaryInk.opacity(0.65) : AppTheme.ink)).frame(maxWidth: .infinity).padding(.vertical, 7).background(isSelected ? AppTheme.primary : .clear).clipShape(RoundedRectangle(cornerRadius: 10)).shadow(color: isSelected ? AppTheme.primary.opacity(0.32) : .clear, radius: 7, y: 4)
-            Circle().fill(isRecorded && !isSelected ? AppTheme.primary : .clear).frame(width: 5, height: 5)
+            Text("\(day.number)").font(.subheadline.weight(.bold)).foregroundStyle(textColor).frame(maxWidth: .infinity).padding(.vertical, 7).background(day.isSelected ? AppTheme.primary : (day.isToday ? AppTheme.primary.opacity(0.12) : .clear)).clipShape(RoundedRectangle(cornerRadius: 10)).shadow(color: day.isSelected ? AppTheme.primary.opacity(0.32) : .clear, radius: 7, y: 4)
+            Circle().fill(indicatorColor).frame(width: 5, height: 5)
         }
     }
 }
 
 struct HistoryRecordCard: View {
-    let date: String; let meal: String; let time: String; let dishes: [MealDish]; let overallReaction: Reaction; let note: String
+    let date: String; let meal: String; let time: String; let dishes: [MealDish]; let overallReaction: Reaction; let note: String; let photoData: Data?
+    let onPhotoTap: () -> Void
     var body: some View {
         ApricotCard {
             VStack(alignment: .leading, spacing: 11) {
                 Text(date).font(.subheadline.weight(.bold)).foregroundStyle(AppTheme.primary)
                 HStack(spacing: 8) {
-                    Image(systemName: meal == "早餐" ? "sun.max.fill" : "sun.max").foregroundStyle(AppTheme.warning)
+                    let mealPeriod = MealPeriod.resolve(meal)
+                    Image(systemName: mealPeriod?.symbol ?? "fork.knife").foregroundStyle(mealPeriod?.color ?? AppTheme.warning)
                     Text(meal).font(.headline)
                     Text(time).font(.subheadline.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
                 }
                 HStack(alignment: .top, spacing: 14) {
-                    HistoryMealPhoto(dish: dishes[0])
+                    if let first = dishes.first {
+                        historyPhoto(first)
+                    }
                     VStack(spacing: 8) {
                         ForEach(dishes) { dish in
-                            HStack {
-                                Text(dish.name).font(.subheadline.weight(.bold)).foregroundStyle(AppTheme.ink)
-                                Spacer()
-                                Text(dish.reaction.title).font(.subheadline.weight(.bold)).foregroundStyle(dish.reaction.color)
-                                Image(systemName: dish.reaction == .like ? "face.smiling" : "face.dashed").foregroundStyle(dish.reaction.color)
+                            HStack(spacing: 6) {
+                                Text(displayName(dish.name))
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(AppTheme.ink)
+                                    .lineLimit(1)
+                                Spacer(minLength: 4)
+                                HStack(spacing: 2) {
+                                    Text(dish.reaction.title).font(.subheadline.weight(.bold)).foregroundStyle(dish.reaction.color)
+                                    Image(systemName: dish.reaction == .like ? "face.smiling" : "face.dashed").foregroundStyle(dish.reaction.color)
+                                }
                             }
                         }
                     }
@@ -276,73 +1240,804 @@ struct HistoryRecordCard: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func historyPhoto(_ dish: MealDish) -> some View {
+        let photo = HistoryMealPhoto(dish: dish, photoData: photoData)
+        if let photoData, UIImage(data: photoData) != nil {
+            photo
+                .contentShape(RoundedRectangle(cornerRadius: 15))
+                .highPriorityGesture(TapGesture().onEnded(onPhotoTap))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint("全屏查看图片")
+        } else {
+            photo
+        }
+    }
+
+    private func displayName(_ name: String) -> String {
+        name.count > 6 ? String(name.prefix(6)) + "…" : name
+    }
 }
 
 struct MealDishThumbnail: View {
     let dish: MealDish; let size: CGFloat
-    var body: some View { Image(systemName: dish.symbol).font(.system(size: size * 0.38, weight: .semibold)).foregroundStyle(.white.opacity(0.9)).frame(width: size, height: size).background(LinearGradient(colors: dish.colors, startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: size * 0.26)).apricotElevation(.control) }
+    var body: some View { FoodIconThumbnail(iconID: dish.iconID, symbol: dish.symbol, colors: dish.colors, size: size) }
 }
 
 struct HistoryMealPhoto: View {
-    let dish: MealDish
+    let dish: MealDish; let photoData: Data?
     var body: some View {
-        Image(systemName: "photo.fill")
-            .font(.system(size: 28, weight: .medium))
-            .foregroundStyle(.white.opacity(0.92))
-            .frame(width: 130, height: 104)
-            .background(LinearGradient(colors: dish.colors, startPoint: .topLeading, endPoint: .bottomTrailing))
-            .clipShape(RoundedRectangle(cornerRadius: 15))
-            .apricotElevation(.control)
-            .accessibilityLabel("餐后照片")
+        Group {
+            if let data = photoData, let image = UIImage(data: data) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                Image(systemName: "photo.fill").font(.system(size: 28, weight: .medium)).foregroundStyle(.white.opacity(0.92))
+            }
+        }
+        .frame(width: 130, height: 104)
+        .background(LinearGradient(colors: dish.colors, startPoint: .topLeading, endPoint: .bottomTrailing))
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .apricotElevation(.control)
+        .accessibilityLabel("餐后照片")
+    }
+}
+
+private struct HistoryImagePreviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    let preview: HistoryImagePreview
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            previewContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 44, height: 44)
+                            .background(.black.opacity(0.55))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("关闭图片预览")
+                }
+                Spacer()
+            }
+            .padding(18)
+        }
+        .statusBarHidden()
+    }
+
+    private var previewContent: some View {
+        Group {
+            if let resourceData = preview.livePhotoResourcesData,
+               let resources = try? JSONDecoder().decode(LivePhotoSandbox.Resources.self, from: resourceData) {
+                LocalLivePhotoPreview(resources: resources, fallbackPhotoData: preview.photoData)
+            } else if let assetIdentifier = preview.livePhotoAssetIdentifier {
+                LivePhotoAssetPreview(assetIdentifier: assetIdentifier, fallbackPhotoData: preview.photoData)
+            } else if let livePhotoData = preview.livePhotoData,
+               let livePhoto = try? NSKeyedUnarchiver.unarchivedObject(ofClass: PHLivePhoto.self, from: livePhotoData) {
+                LivePhotoPlayer(livePhoto: livePhoto)
+            } else if let image = UIImage(data: preview.photoData) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+            } else {
+                Color.black
+            }
+        }
+    }
+}
+
+private struct LivePhotoAssetPreview: View {
+    let assetIdentifier: String
+    let fallbackPhotoData: Data
+    @State private var livePhoto: PHLivePhoto?
+
+    var body: some View {
+        Group {
+            if let livePhoto {
+                LivePhotoPlayer(livePhoto: livePhoto)
+            } else if let image = UIImage(data: fallbackPhotoData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Color.black
+            }
+        }
+        .task(id: assetIdentifier) {
+            let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
+            guard let asset = assets.firstObject else { return }
+
+            let options = PHLivePhotoRequestOptions()
+            options.isNetworkAccessAllowed = true
+            let targetSize = CGSize(width: UIScreen.main.bounds.width * UIScreen.main.scale, height: UIScreen.main.bounds.height * UIScreen.main.scale)
+            PHImageManager.default().requestLivePhoto(
+                for: asset,
+                targetSize: targetSize,
+                contentMode: .aspectFit,
+                options: options
+            ) { result, _ in
+                guard let result else { return }
+                DispatchQueue.main.async { livePhoto = result }
+            }
+        }
+    }
+}
+
+private struct LocalLivePhotoPreview: View {
+    let resources: LivePhotoSandbox.Resources
+    let fallbackPhotoData: Data
+    @State private var livePhoto: PHLivePhoto?
+
+    var body: some View {
+        Group {
+            if let livePhoto {
+                LivePhotoPlayer(livePhoto: livePhoto)
+            } else if let image = UIImage(data: fallbackPhotoData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Color.black
+            }
+        }
+        .task(id: resources) {
+            guard let urls = LivePhotoSandbox.urls(for: resources) else { return }
+            PHLivePhoto.request(
+                withResourceFileURLs: urls,
+                placeholderImage: UIImage(data: fallbackPhotoData),
+                targetSize: CGSize(width: UIScreen.main.bounds.width * UIScreen.main.scale, height: UIScreen.main.bounds.height * UIScreen.main.scale),
+                contentMode: .aspectFit
+            ) { result, _ in
+                guard let result else { return }
+                DispatchQueue.main.async { livePhoto = result }
+            }
+        }
+    }
+}
+
+private enum LivePhotoSandbox {
+    struct Resources: Codable, Hashable {
+        let folderName: String
+        let photoFilename: String
+        let videoFilename: String
+    }
+
+    private static var rootURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("LivePhotos", isDirectory: true)
+    }
+
+    static func urls(for resources: Resources) -> [URL]? {
+        let folder = rootURL.appendingPathComponent(resources.folderName, isDirectory: true)
+        let photoURL = folder.appendingPathComponent(resources.photoFilename)
+        let videoURL = folder.appendingPathComponent(resources.videoFilename)
+        guard FileManager.default.fileExists(atPath: photoURL.path),
+              FileManager.default.fileExists(atPath: videoURL.path) else { return nil }
+        return [photoURL, videoURL]
+    }
+
+    static func copy(assetIdentifier: String, completion: @escaping (Data?) -> Void) {
+        let assets = PHAsset.fetchAssets(withLocalIdentifiers: [assetIdentifier], options: nil)
+        guard let asset = assets.firstObject else { completion(nil); return }
+
+        let assetResources = PHAssetResource.assetResources(for: asset)
+        guard let photo = assetResources.first(where: { $0.type == .fullSizePhoto })
+                ?? assetResources.first(where: { $0.type == .photo }),
+              let video = assetResources.first(where: { $0.type == .fullSizePairedVideo })
+                ?? assetResources.first(where: { $0.type == .pairedVideo }) else {
+            completion(nil)
+            return
+        }
+
+        let folderName = UUID().uuidString
+        let folder = rootURL.appendingPathComponent(folderName, isDirectory: true)
+        let photoURL = folder.appendingPathComponent("photo." + fileExtension(for: photo, fallback: "heic"))
+        let videoURL = folder.appendingPathComponent("video." + fileExtension(for: video, fallback: "mov"))
+
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        } catch {
+            completion(nil)
+            return
+        }
+
+        let options = PHAssetResourceRequestOptions()
+        options.isNetworkAccessAllowed = true
+        let group = DispatchGroup()
+        let errorQueue = DispatchQueue(label: "LivePhotoSandbox.copy")
+        var writeError: Error?
+        for (resource, url) in [(photo, photoURL), (video, videoURL)] {
+            group.enter()
+            PHAssetResourceManager.default().writeData(for: resource, toFile: url, options: options) { error in
+                if let error {
+                    errorQueue.sync { writeError = writeError ?? error }
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            guard writeError == nil else {
+                try? FileManager.default.removeItem(at: folder)
+                completion(nil)
+                return
+            }
+            let resources = Resources(folderName: folderName, photoFilename: photoURL.lastPathComponent, videoFilename: videoURL.lastPathComponent)
+            completion(try? JSONEncoder().encode(resources))
+        }
+    }
+
+    private static func fileExtension(for resource: PHAssetResource, fallback: String) -> String {
+        let ext = URL(fileURLWithPath: resource.originalFilename).pathExtension
+        return ext.isEmpty ? fallback : ext
+    }
+}
+
+private struct LivePhotoPlayer: UIViewRepresentable {
+    let livePhoto: PHLivePhoto
+
+    func makeUIView(context: Context) -> PHLivePhotoView {
+        let view = PHLivePhotoView()
+        view.contentMode = .scaleAspectFit
+        view.livePhoto = livePhoto
+        DispatchQueue.main.async { view.startPlayback(with: .full) }
+        return view
+    }
+
+    func updateUIView(_ uiView: PHLivePhotoView, context: Context) {
+        guard uiView.livePhoto != livePhoto else { return }
+        uiView.livePhoto = livePhoto
+        DispatchQueue.main.async { uiView.startPlayback(with: .full) }
+    }
+
+    static func dismantleUIView(_ uiView: PHLivePhotoView, coordinator: ()) {
+        uiView.stopPlayback()
     }
 }
 
 struct FloatingTabBar: View {
-    @Binding var tab: AppTab; let add: () -> Void
-    var body: some View { ZStack { HStack(spacing: 0) { tabItem(.home); tabItem(.recipes); Spacer().frame(width: 58); tabItem(.analysis); tabItem(.history) }.padding(.horizontal, 8).frame(height: 62).background(.white).clipShape(Capsule()).apricotElevation(.primary); Button(action: add) { Image(systemName: "plus").font(.system(size: 26, weight: .medium)).foregroundStyle(.white).frame(width: 54, height: 54).background(LinearGradient(colors: [Color(red: 1, green: 0.60, blue: 0.36), Color(red: 1, green: 0.42, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)).overlay { Circle().stroke(.white.opacity(0.42), lineWidth: 1).padding(1) }.clipShape(Circle()).shadow(color: AppTheme.primary.opacity(0.50), radius: 8, y: 8).shadow(color: AppTheme.ink.opacity(0.14), radius: 3, y: 2) }.offset(y: -7) }.padding(.horizontal, 18).padding(.bottom, 12) }
-    private func tabItem(_ item: AppTab) -> some View { Button { tab = item } label: { VStack(spacing: 3) { Image(systemName: item.symbol).font(.system(size: 18, weight: .semibold)).frame(width: 42, height: 28).background(tab == item ? AppTheme.warmSurface : .clear).clipShape(Capsule()); Text(item.title).font(.caption2.weight(.bold)) }.foregroundStyle(tab == item ? AppTheme.primary : AppTheme.secondaryInk).frame(maxWidth: .infinity) } }
+    @Namespace private var selectionAnimation
+    let tab: AppTab; let select: (AppTab) -> Void; let add: () -> Void
+    var body: some View { ZStack { HStack(spacing: 0) { tabItem(.home); tabItem(.recipes); Spacer().frame(width: 58); tabItem(.analysis); tabItem(.history) }.padding(.horizontal, 8).frame(height: 62).background(.white).clipShape(Capsule()).apricotElevation(.primary).animation(.snappy(duration: 0.24, extraBounce: 0.08), value: tab); Button(action: add) { Image(systemName: "plus").font(.system(size: 26, weight: .medium)).foregroundStyle(.white).frame(width: 54, height: 54).background(LinearGradient(colors: [Color(red: 1, green: 0.60, blue: 0.36), Color(red: 1, green: 0.42, blue: 0.16)], startPoint: .topLeading, endPoint: .bottomTrailing)).overlay { Circle().stroke(.white.opacity(0.42), lineWidth: 1).padding(1) }.clipShape(Circle()).shadow(color: AppTheme.primary.opacity(0.50), radius: 8, y: 8).shadow(color: AppTheme.ink.opacity(0.14), radius: 3, y: 2) }.offset(y: -7) }.padding(.horizontal, 18).padding(.bottom, 12) }
+    private func tabItem(_ item: AppTab) -> some View { Button { select(item) } label: { VStack(spacing: 3) { tabIcon(item); Text(item.title).font(.caption2.weight(.bold)) }.foregroundStyle(tab == item ? AppTheme.primary : AppTheme.secondaryInk).frame(maxWidth: .infinity) } }
+
+    private func tabIcon(_ item: AppTab) -> some View {
+        Image(systemName: item.symbol)
+            .font(.system(size: 18, weight: .semibold))
+            .frame(width: 42, height: 28)
+            .background {
+                if tab == item {
+                    Capsule()
+                        .fill(AppTheme.warmSurface)
+                        .matchedGeometryEffect(id: "selectedTab", in: selectionAnimation)
+                }
+            }
+            .clipShape(Capsule())
+            .scaleEffect(tab == item ? 1.10 : 1)
+    }
 }
 
 struct MealRecordView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(DiaryStore.self) private var store
+    let form: MealRecordForm
+
+    @State private var date: Date
+    @State private var meal: String
+    @State private var reaction: Reaction
+    @State private var note: String
+    @State private var photoData: Data?
+    @State private var livePhotoData: Data?
+    @State private var livePhotoAssetIdentifier: String?
+    @State private var livePhotoResourcesData: Data?
+    @State private var dishes: [DishSnapshot]
+    @State private var editingID: UUID?
+
+    @State private var showDatePicker = false
+    @State private var showRecipePicker = false
+    @State private var showCustomAlert = false
+    @State private var customName = ""
+    @State private var showValidation = false
+    @State private var showPhotoPicker = false
+    @State private var iconEditTarget: IconEditTarget?
+
+    private let recipeTypes = ["主食", "肉食", "蔬菜", "水果"]
+
+    init(form: MealRecordForm) {
+        self.form = form
+        _date = State(initialValue: form.date)
+        _meal = State(initialValue: form.meal)
+        _reaction = State(initialValue: form.reaction)
+        _note = State(initialValue: form.note)
+        _photoData = State(initialValue: form.photoData)
+        _livePhotoData = State(initialValue: form.livePhotoData)
+        _livePhotoAssetIdentifier = State(initialValue: form.livePhotoAssetIdentifier)
+        _livePhotoResourcesData = State(initialValue: form.livePhotoResourcesData)
+        _dishes = State(initialValue: form.dishes)
+        _editingID = State(initialValue: form.editingID)
+    }
+
+    private var dateString: String { Self.dateFormatter.string(from: date) }
+
     var body: some View {
         NavigationStack { ScrollView(showsIndicators: false) { VStack(spacing: 14) {
-            HStack { Button { dismiss() } label: { Image(systemName: "chevron.left").font(.headline).frame(width: 40, height: 40).background(.white).clipShape(RoundedRectangle(cornerRadius: 14)).apricotElevation(.control) }; Spacer(); Text("记录一餐").font(.title3.bold()); Spacer(); Text("清空").font(.caption.weight(.bold)).foregroundStyle(AppTheme.secondaryInk) }
-            ApricotCard { VStack(alignment: .leading, spacing: 4) { Text("日期").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); HStack { Text("2024年5月20日").font(.headline); Spacer(); Image(systemName: "chevron.right").foregroundStyle(AppTheme.primary) } } }
-            VStack(alignment: .leading, spacing: 8) { Text("选择餐次").font(.subheadline.bold()); HStack(spacing: 7) { ForEach(["早餐", "午餐", "晚餐", "加餐"], id: \.self) { MealOption(title: $0, isSelected: $0 == "早餐") } } }
-            VStack(alignment: .leading, spacing: 8) { Text("选择菜谱").font(.subheadline.bold()); ApricotCard { VStack(spacing: 0) { ForEach(Array(MealDishFixtures.breakfast.enumerated()), id: \.element.id) { index, dish in VStack(spacing: 0) { HStack { MealDishThumbnail(dish: dish, size: 38); Text(dish.name).font(.subheadline.bold()); Spacer(); Pill(text: dish.reaction == .like ? "喜欢" : "一般", color: dish.reaction.color); Image(systemName: "xmark").font(.caption).foregroundStyle(AppTheme.secondaryInk) }.padding(.vertical, 8); if index < MealDishFixtures.breakfast.count - 1 { Divider().overlay(AppTheme.warmSurface) } } } } }; Label("添加其他食物", systemImage: "plus").font(.subheadline.weight(.bold)).foregroundStyle(AppTheme.primary).frame(maxWidth: .infinity, alignment: .center).padding(.top, 2) }
-            VStack(alignment: .leading, spacing: 8) { Text("上传照片（选填）").font(.subheadline.bold()); Image(systemName: "camera").foregroundStyle(AppTheme.secondaryInk).frame(maxWidth: .infinity, minHeight: 64).background(AppTheme.warmSurface.opacity(0.6)).clipShape(RoundedRectangle(cornerRadius: 16)) }
-            VStack(alignment: .leading, spacing: 8) { Text("接受度").font(.subheadline.bold()); HStack(spacing: 7) { ForEach(Reaction.allCases) { ReactionOption(reaction: $0, isSelected: $0 == .like) } } }
+            HStack { Button { dismiss() } label: { Image(systemName: "chevron.left").font(.headline).frame(width: 40, height: 40).background(.white).clipShape(RoundedRectangle(cornerRadius: 14)).apricotElevation(.control) }; Spacer(); Text(editingID == nil ? "记录一餐" : "编辑记录").font(.title3.bold()); Spacer(); Button { clearAll() } label: { Text("清空").font(.caption.weight(.bold)).foregroundStyle(AppTheme.secondaryInk) }.buttonStyle(.plain) }
+            Button { showDatePicker = true } label: { ApricotCard { HStack(spacing: 8) { Text("日期").font(.subheadline.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk); Text(dateString).font(.headline).foregroundStyle(AppTheme.ink); Spacer(); Image(systemName: "chevron.right").foregroundStyle(AppTheme.primary) } } }.buttonStyle(.plain)
+            VStack(alignment: .leading, spacing: 8) { Text("选择餐次").font(.subheadline.bold()); HStack(spacing: 7) { ForEach(MealPeriod.allCases) { option in Button { meal = option.rawValue } label: { MealOption(meal: option, isSelected: option.rawValue == meal) }.buttonStyle(.plain) } } }
+            VStack(alignment: .leading, spacing: 8) {
+                Text("选择菜谱").font(.subheadline.bold())
+                ApricotCard { VStack(spacing: 0) {
+                    if dishes.isEmpty {
+                        Text("还没有添加食物").font(.subheadline).foregroundStyle(AppTheme.secondaryInk).frame(maxWidth: .infinity).padding(.vertical, 14)
+                    } else {
+                        ForEach(Array(dishes.enumerated()), id: \.element.id) { index, dish in
+                            VStack(spacing: 0) {
+                                HStack(spacing: 10) {
+                                    Button {
+                                        if let recipeID = dish.recipeID { iconEditTarget = IconEditTarget(dishID: dish.id, recipeID: recipeID) }
+                                    } label: {
+                                        MealDishThumbnail(dish: MealDish(snapshot: dish), size: 38)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel("修改\(dish.name)图标")
+
+                                    VStack(alignment: .leading, spacing: 7) {
+                                        Text(dish.name).font(.subheadline.bold()).lineLimit(1)
+                                        HStack(spacing: 7) {
+                                            Menu {
+                                                ForEach(recipeTypes, id: \.self) { type in
+                                                    Button { selectRecipeType(type, for: dish) } label: {
+                                                        Label(type, systemImage: recipeCategories(for: dish).contains(type) ? "checkmark" : "")
+                                                    }
+                                                }
+                                            } label: {
+                                                Pill(text: recipeTypeLabel(for: dish), color: recipeTypeColor(for: dish)).contentShape(Capsule())
+                                            }
+                                            .accessibilityHint("点击选择菜谱类型")
+
+                                            Menu {
+                                                ForEach(Reaction.allCases) { option in
+                                                    Button { dishes[index].reactionRaw = option.rawValue } label: {
+                                                        Label(option.title, systemImage: dish.reaction == option ? "checkmark" : "")
+                                                    }
+                                                }
+                                            } label: {
+                                                Pill(text: dish.reaction.title, color: dish.reaction.color).contentShape(Capsule())
+                                            }
+                                            .accessibilityHint("点击选择这道菜谱的喜欢程度")
+                                        }
+                                    }
+                                    Spacer(minLength: 0)
+                                    Button { dishes.remove(at: index) } label: {
+                                        Image(systemName: "xmark").font(.caption).foregroundStyle(AppTheme.secondaryInk)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                .padding(.vertical, 8)
+                                if index < dishes.count - 1 { Divider().overlay(AppTheme.warmSurface) }
+                            }
+                        }
+                    }
+                } }
+                HStack(spacing: 10) {
+                    addButton(title: "从菜谱中选择", systemImage: "book.closed") { showRecipePicker = true }
+                    addButton(title: "添加新菜谱", systemImage: "plus.circle") { customName = ""; showCustomAlert = true }
+                }
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                Text("上传照片（选填）").font(.subheadline.bold())
+                Button { showPhotoPicker = true } label: {
+                    Group {
+                        if let data = photoData, let image = UIImage(data: data) {
+                            Image(uiImage: image).resizable().scaledToFill()
+                        } else {
+                            Image(systemName: "camera").foregroundStyle(AppTheme.secondaryInk)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 64)
+                    .background(photoData == nil ? AppTheme.warmSurface.opacity(0.6) : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }.buttonStyle(.plain)
+                if photoData != nil {
+                    Button("移除照片") {
+                        photoData = nil
+                        livePhotoData = nil
+                        livePhotoAssetIdentifier = nil
+                        livePhotoResourcesData = nil
+                    }
+                    .font(.caption.weight(.semibold)).foregroundStyle(AppTheme.danger).frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            }
+            VStack(alignment: .leading, spacing: 8) { Text("接受度").font(.subheadline.bold()); HStack(spacing: 7) { ForEach(Reaction.allCases) { option in Button { reaction = option } label: { ReactionOption(reaction: option, isSelected: option == reaction) }.buttonStyle(.plain) } } }
             VStack(alignment: .leading, spacing: 8) {
                 Text("备注（选填）").font(.subheadline.bold())
-                Text("记录食量、反应或饮食情况…")
-                    .font(.subheadline)
-                    .foregroundStyle(AppTheme.secondaryInk)
-                    .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
-                    .padding(12)
-                    .background(AppTheme.warmSurface.opacity(0.58))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay { RoundedRectangle(cornerRadius: 16).stroke(AppTheme.warmSurface, lineWidth: 1) }
+                ZStack(alignment: .topLeading) {
+                    if note.isEmpty { Text("记录食量、反应或饮食情况…").font(.subheadline).foregroundStyle(AppTheme.secondaryInk.opacity(0.6)).padding(.horizontal, 12).padding(.top, 12) }
+                    TextEditor(text: $note).font(.subheadline).foregroundStyle(AppTheme.ink).frame(minHeight: 72).padding(.horizontal, 6).padding(.vertical, 2).scrollContentBackground(.hidden).background(Color.clear)
+                }
+                .frame(minHeight: 72)
+                .background(AppTheme.warmSurface.opacity(0.58))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay { RoundedRectangle(cornerRadius: 16).stroke(AppTheme.warmSurface, lineWidth: 1) }
             }
-            Text("保存").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 15).background(LinearGradient(colors: [.orange.opacity(0.72), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: 17)).apricotElevation(.primary)
-        }.padding(17) }.background(AppTheme.background) }.presentationDetents([.large])
+            Button { save() } label: { Text("保存").font(.headline).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 15).background(LinearGradient(colors: [.orange.opacity(0.72), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing)).clipShape(RoundedRectangle(cornerRadius: 17)).apricotElevation(.primary) }.buttonStyle(.plain)
+        }.padding(17) }.background(AppTheme.background) }
+        .presentationDetents([.large])
+        .sheet(isPresented: $showDatePicker) { datePickerSheet }
+        .sheet(isPresented: $showRecipePicker) {
+            RecipePickerSheet { recipe in
+                dishes.append(DishSnapshot(recipe: recipe, reaction: .like))
+                showRecipePicker = false
+            }
+        }
+        .sheet(isPresented: $showPhotoPicker) {
+            PhotoPicker { selection in
+                photoData = selection?.photoData
+                livePhotoData = selection?.livePhotoData
+                livePhotoAssetIdentifier = selection?.livePhotoAssetIdentifier
+                livePhotoResourcesData = selection?.livePhotoResourcesData
+            }
+        }
+        .sheet(item: $iconEditTarget) { target in
+            FoodIconPickerSheet(selectedID: dishes.first(where: { $0.id == target.dishID })?.iconID ?? FoodIconCatalog.defaultID) { icon in
+                guard let index = dishes.firstIndex(where: { $0.id == target.dishID }) else { return }
+                dishes[index].iconID = icon.id
+                store.updateRecipeIcon(id: target.recipeID, iconID: icon.id)
+            }
+        }
+        .alert("添加新菜谱", isPresented: $showCustomAlert) {
+            TextField("菜谱名称", text: $customName)
+            Button("添加") { addNewRecipe() }
+            Button("取消", role: .cancel) {}
+        }
+        .alert("至少添加一道宝宝尝过的食物", isPresented: $showValidation) { Button("好的", role: .cancel) {} }
+    }
+
+    private var datePickerSheet: some View {
+        NavigationStack {
+            VStack {
+                DatePicker("日期", selection: $date, displayedComponents: .date).datePickerStyle(.graphical).labelsHidden().padding()
+                Spacer()
+            }
+            .navigationTitle("选择日期")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showDatePicker = false } } }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func clearAll() {
+        date = .now; meal = DiaryStore.inferredMeal(); reaction = .like; note = ""; photoData = nil; livePhotoData = nil; livePhotoAssetIdentifier = nil; livePhotoResourcesData = nil; dishes = []
+    }
+
+    private func addNewRecipe() {
+        let name = customName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        let recipe = store.addRecipe(name: name)
+        dishes.append(DishSnapshot(recipe: recipe, reaction: reaction))
+        customName = ""
+    }
+
+    private func recipeCategories(for dish: DishSnapshot) -> [String] {
+        guard let recipeID = dish.recipeID else { return [] }
+        return store.recipes.first(where: { $0.id == recipeID })?.categories ?? []
+    }
+
+    private func recipeTypeLabel(for dish: DishSnapshot) -> String {
+        recipeCategories(for: dish).first ?? "选择类型"
+    }
+
+    private func recipeTypeColor(for dish: DishSnapshot) -> Color {
+        switch recipeTypeLabel(for: dish) {
+        case "肉食": return .pink
+        case "蔬菜": return AppTheme.success
+        case "水果": return .purple
+        default: return AppTheme.warning
+        }
+    }
+
+    private func selectRecipeType(_ type: String, for dish: DishSnapshot) {
+        guard let recipeID = dish.recipeID else { return }
+        store.updateRecipeCategories(id: recipeID, categories: [type])
+    }
+
+    @ViewBuilder
+    private func addButton(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(AppTheme.primary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .background(AppTheme.warmSurface.opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+        }.buttonStyle(.plain)
+    }
+
+    private func save() {
+        guard !dishes.isEmpty else { showValidation = true; return }
+        store.saveMealRecord(MealRecordForm(editingID: editingID, date: date, meal: meal, reaction: reaction, note: note, photoData: photoData, livePhotoData: livePhotoData, livePhotoAssetIdentifier: livePhotoAssetIdentifier, livePhotoResourcesData: livePhotoResourcesData, dishes: dishes))
+        dismiss()
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy年M月d日"
+        return formatter
+    }()
+}
+
+struct MealOption: View {
+    let meal: MealPeriod
+    let isSelected: Bool
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Image(systemName: meal.symbol).font(.system(size: 17, weight: .semibold))
+            Text(meal.rawValue).font(.caption.weight(.bold))
+        }
+        .foregroundStyle(isSelected ? .white : meal.color)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 9)
+        .background(isSelected ? LinearGradient(colors: [.orange.opacity(0.72), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing) : LinearGradient(colors: [.white, .white], startPoint: .top, endPoint: .bottom))
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .apricotElevation(isSelected ? .primary : .control)
+        .accessibilityLabel(meal.rawValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
-struct MealOption: View { let title: String; let isSelected: Bool; var body: some View { Text(title).font(.caption.weight(.bold)).foregroundStyle(isSelected ? .white : AppTheme.secondaryInk).frame(maxWidth: .infinity).padding(.vertical, 10).background(isSelected ? LinearGradient(colors: [.orange.opacity(0.72), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing) : LinearGradient(colors: [.white, .white], startPoint: .top, endPoint: .bottom)).clipShape(RoundedRectangle(cornerRadius: 15)).apricotElevation(isSelected ? .primary : .control) } }
-
 struct ReactionOption: View { let reaction: Reaction; let isSelected: Bool; var body: some View { VStack(spacing: 3) { Image(systemName: reaction.symbol).font(.system(size: 19, weight: .medium)); Text(reaction.title).font(.caption2.weight(isSelected ? .bold : .semibold)) }.foregroundStyle(reaction.color).frame(maxWidth: .infinity).padding(.vertical, 8).background(isSelected ? reaction.color.opacity(0.15) : .white).clipShape(RoundedRectangle(cornerRadius: 14)).shadow(color: isSelected ? reaction.color.opacity(0.28) : AppTheme.primary.opacity(0.08), radius: isSelected ? 2 : 6, y: isSelected ? 4 : 3) } }
+
+struct RecipePickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(DiaryStore.self) private var store
+    let onPick: (Recipe) -> Void
+    @State private var search = ""
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 10) {
+                    ForEach(store.libraryRecipes(search: search, category: "全部")) { recipe in
+                        Button { onPick(recipe) } label: {
+                            HStack(spacing: 12) {
+                                FoodThumbnail(recipe: recipe, size: 44)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(recipe.name).font(.subheadline.bold()).foregroundStyle(AppTheme.ink)
+                                    HStack { ForEach(recipe.categories.prefix(2), id: \.self) { Pill(text: $0, color: AppTheme.warning) } }
+                                    Text("已记录 \(recipe.count) 次").font(.caption2).foregroundStyle(AppTheme.secondaryInk)
+                                }
+                                Spacer()
+                                Image(systemName: "plus.circle.fill").foregroundStyle(AppTheme.primary)
+                            }
+                            .padding(12)
+                            .background(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .apricotElevation(.card)
+                        }.buttonStyle(.plain)
+                    }
+                }.padding(17)
+            }
+            .background(AppTheme.background)
+            .navigationTitle("选择菜谱")
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $search, prompt: "搜索食材或菜谱")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } } }
+        }
+    }
+}
+
+struct FoodIconPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let selectedID: String
+    let onPick: (FoodIconCatalog.Icon) -> Void
+    @State private var search = ""
+    @State private var category = "全部"
+
+    private var icons: [FoodIconCatalog.Icon] { FoodIconCatalog.filtered(search: search, category: category) }
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 12) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(FoodIconCatalog.categories, id: \.self) { item in
+                            Button(item) { category = item }
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(category == item ? .white : AppTheme.secondaryInk)
+                                .padding(.horizontal, 12).padding(.vertical, 9)
+                                .background(category == item ? AppTheme.primary : AppTheme.warmSurface)
+                                .clipShape(Capsule())
+                        }
+                    }.padding(.horizontal, 17)
+                }
+                ScrollView(showsIndicators: false) {
+                    LazyVGrid(columns: columns, spacing: 14) {
+                        ForEach(icons) { icon in
+                            Button {
+                                onPick(icon)
+                                dismiss()
+                            } label: {
+                                VStack(spacing: 6) {
+                                    FoodIconThumbnail(iconID: icon.id, symbol: "fork.knife", colors: [AppTheme.warmSurface, .white], size: 56)
+                                        .overlay { if icon.id == selectedID { RoundedRectangle(cornerRadius: 13).stroke(AppTheme.primary, lineWidth: 2) } }
+                                    Text(icon.name).font(.caption2.weight(.semibold)).foregroundStyle(AppTheme.ink).lineLimit(1)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 82)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("选择\(icon.name)图标")
+                        }
+                    }.padding(17)
+                }
+            }
+            .background(AppTheme.background)
+            .navigationTitle("选择食材图标")
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $search, prompt: "搜索食材")
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } } }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+struct PickedMealPhoto {
+    let photoData: Data
+    let livePhotoData: Data?
+    let livePhotoAssetIdentifier: String?
+    let livePhotoResourcesData: Data?
+}
+
+struct PhotoPicker: UIViewControllerRepresentable {
+    let onPick: (PickedMealPhoto?) -> Void
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let onPick: (PickedMealPhoto?) -> Void
+        init(onPick: @escaping (PickedMealPhoto?) -> Void) { self.onPick = onPick }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            picker.dismiss(animated: true)
+            guard let result = results.first,
+                  result.itemProvider.canLoadObject(ofClass: UIImage.self) else {
+                onPick(nil); return
+            }
+            let provider = result.itemProvider
+            let isLivePhoto = provider.canLoadObject(ofClass: PHLivePhoto.self)
+
+            loadLivePhotoData(from: provider) { livePhotoData in
+                provider.loadObject(ofClass: UIImage.self) { object, _ in
+                    guard let photoData = (object as? UIImage)?.jpegData(compressionQuality: 0.8) else {
+                        DispatchQueue.main.async { self.onPick(nil) }
+                        return
+                    }
+                    let selection = PickedMealPhoto(
+                        photoData: photoData,
+                        livePhotoData: livePhotoData,
+                        livePhotoAssetIdentifier: result.assetIdentifier,
+                        livePhotoResourcesData: nil
+                    )
+                    guard isLivePhoto else {
+                        DispatchQueue.main.async { self.onPick(selection) }
+                        return
+                    }
+                    self.copyLivePhotoResources(assetIdentifier: result.assetIdentifier) { resourcesData in
+                        let copiedSelection = PickedMealPhoto(
+                            photoData: selection.photoData,
+                            livePhotoData: selection.livePhotoData,
+                            livePhotoAssetIdentifier: selection.livePhotoAssetIdentifier,
+                            livePhotoResourcesData: resourcesData
+                        )
+                        DispatchQueue.main.async { self.onPick(copiedSelection) }
+                    }
+                }
+            }
+        }
+
+        private func copyLivePhotoResources(assetIdentifier: String?, completion: @escaping (Data?) -> Void) {
+            guard let assetIdentifier else { completion(nil); return }
+
+            let copyIfAllowed: (PHAuthorizationStatus) -> Void = { status in
+                guard status == .authorized || status == .limited else { completion(nil); return }
+                LivePhotoSandbox.copy(assetIdentifier: assetIdentifier, completion: completion)
+            }
+
+            let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+            if status == .notDetermined {
+                PHPhotoLibrary.requestAuthorization(for: .readWrite, handler: copyIfAllowed)
+            } else {
+                copyIfAllowed(status)
+            }
+        }
+
+        private func loadLivePhotoData(from provider: NSItemProvider, completion: @escaping (Data?) -> Void) {
+            guard provider.canLoadObject(ofClass: PHLivePhoto.self) else {
+                completion(nil)
+                return
+            }
+            provider.loadObject(ofClass: PHLivePhoto.self) { object, _ in
+                guard let livePhoto = object as? PHLivePhoto else {
+                    completion(nil)
+                    return
+                }
+                let data = try? NSKeyedArchiver.archivedData(withRootObject: livePhoto, requiringSecureCoding: true)
+                completion(data)
+            }
+        }
+    }
+}
+
+struct DocumentPicker: UIViewControllerRepresentable {
+    let onPick: (URL?) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.zip])
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL?) -> Void
+        init(onPick: @escaping (URL?) -> Void) { self.onPick = onPick }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            onPick(urls.first)
+        }
+
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+            onPick(nil)
+        }
+    }
+}
 
 struct FormCard: View { let title: String; let value: String; let symbol: String; var body: some View { ApricotCard { HStack { Image(systemName: symbol).foregroundStyle(AppTheme.primary).frame(width: 26); Text(title).font(.subheadline.bold()); Spacer(); Text(value).font(.subheadline).foregroundStyle(AppTheme.secondaryInk); Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(AppTheme.secondaryInk) } }.padding(0) } }
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(DiaryStore.self) private var store
     @State private var nickname = "泡泡"
-    @State private var monthAge = "10个月20天"
+    @State private var birthDate: Date = .now
     @State private var gender = "男宝"
-    @State private var exportURL: URL?
     @State private var exportError: String?
-    @State private var isShareSheetPresented = false
+    @State private var isExporting = false
+    @State private var exportProgress: Double = 0
+    @State private var showAvatarPicker = false
+    @State private var showBirthDatePicker = false
+    @State private var importError: String?
+    @State private var isImporting = false
+    @State private var importProgress: Double = 0
+    @State private var showDocumentPicker = false
+    @State private var showImportConfirmation = false
+    @State private var pendingImportURL: URL?
+    @State private var importSuccessMessage: String?
+
+    private var birthDateString: String { Self.birthDateFormatter.string(from: birthDate) }
 
     var body: some View {
         NavigationStack {
@@ -359,19 +2054,78 @@ struct SettingsView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
+                    importButton
+                    if let importError {
+                        Label(importError, systemImage: "exclamationmark.circle.fill")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(AppTheme.danger)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                    }
+                    if let importSuccessMessage {
+                        Label(importSuccessMessage, systemImage: "checkmark.circle.fill")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(AppTheme.success)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                    }
                 }
                 .padding(.horizontal, 17)
                 .padding(.top, 12)
                 .padding(.bottom, 36)
             }
             .background(AppTheme.background)
-            .sheet(isPresented: $isShareSheetPresented) {
-                if let exportURL {
-                    ActivityShareSheet(activityItems: [exportURL])
+            .onAppear {
+                nickname = store.baby.name
+                birthDate = store.baby.birthDate
+                gender = store.baby.gender
+            }
+            .onDisappear { store.updateBaby(name: nickname, birthDate: birthDate, gender: gender) }
+            .sheet(isPresented: $showAvatarPicker) {
+                PhotoPicker { selection in
+                    store.updateAvatar(selection?.photoData)
+                    showAvatarPicker = false
+                }
+            }
+            .sheet(isPresented: $showBirthDatePicker) {
+                NavigationStack {
+                    VStack {
+                        DatePicker("出生日期", selection: $birthDate, displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .labelsHidden()
+                            .padding()
+                        Spacer()
+                    }
+                    .navigationTitle("选择出生日期")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showBirthDatePicker = false } } }
+                }
+                .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showDocumentPicker) {
+                DocumentPicker { url in
+                    showDocumentPicker = false
+                    guard let url else { return }
+                    handlePickedImport(url: url)
+                }
+            }
+            .alert("确认导入", isPresented: $showImportConfirmation) {
+                Button("取消", role: .cancel) { pendingImportURL = nil }
+                Button("导入") { performImport() }
+            } message: {
+                if let url = pendingImportURL {
+                    Text("将从 \"\(url.lastPathComponent)\" 导入数据。\n已有菜谱将跳过，用餐记录将追加。")
                 }
             }
         }
     }
+
+    private static let birthDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy年M月d日"
+        return formatter
+    }()
 
     private var header: some View {
         HStack {
@@ -396,18 +2150,38 @@ struct SettingsView: View {
     private var profileCard: some View {
         ApricotCard {
             VStack(spacing: 18) {
-                ZStack {
-                    Circle()
-                        .fill(LinearGradient(colors: [.orange.opacity(0.68), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 88, height: 88)
+                Button { showAvatarPicker = true } label: {
+                    BabyAvatar(data: store.baby.avatarData, size: 88, cornerRadius: 44, fallbackSymbol: "face.smiling.fill")
                         .apricotElevation(.primary)
-                    Image(systemName: "face.smiling.fill")
-                        .font(.system(size: 42, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.92))
-                }
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(AppTheme.primary)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.white, lineWidth: 2))
+                        }
+                }.buttonStyle(.plain)
                 VStack(alignment: .leading, spacing: 12) {
                     SettingsTextField(title: "宝宝昵称", text: $nickname, symbol: "heart.fill")
-                    SettingsTextField(title: "月龄", text: $monthAge, symbol: "calendar")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("出生日期", systemImage: "calendar")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(AppTheme.ink)
+                        Button { showBirthDatePicker = true } label: {
+                            HStack {
+                                Text(birthDateString).font(.subheadline).foregroundStyle(AppTheme.ink)
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(AppTheme.secondaryInk)
+                            }
+                            .padding(.horizontal, 12)
+                            .frame(minHeight: 44)
+                            .background(AppTheme.warmSurface.opacity(0.65))
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .overlay { RoundedRectangle(cornerRadius: 14).stroke(AppTheme.warmSurface, lineWidth: 1) }
+                        }.buttonStyle(.plain)
+                    }
                     VStack(alignment: .leading, spacing: 8) {
                         Label("性别", systemImage: "person.fill")
                             .font(.subheadline.weight(.bold))
@@ -429,7 +2203,7 @@ struct SettingsView: View {
                 Label("数据管理", systemImage: "externaldrive.fill")
                     .font(.headline)
                     .foregroundStyle(AppTheme.ink)
-                Text("导出包含宝宝资料、菜谱和用餐记录的 JSON 文件，便于自行备份或迁移。")
+                Text("导出包含宝宝资料、菜谱、用餐记录及照片的备份包（.zip），便于自行备份或迁移。")
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.secondaryInk)
                     .fixedSize(horizontal: false, vertical: true)
@@ -438,26 +2212,209 @@ struct SettingsView: View {
     }
 
     private var exportButton: some View {
-        Button(action: exportJSON) {
-            Label("导出 JSON", systemImage: "square.and.arrow.up")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .background(LinearGradient(colors: [.orange.opacity(0.70), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing))
+        VStack(spacing: 10) {
+            if isExporting {
+                VStack(spacing: 8) {
+                    ProgressView(value: exportProgress, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle(tint: AppTheme.primary))
+                        .scaleEffect(x: 1, y: 1.2, anchor: .center)
+                        .padding(.horizontal, 4)
+                    Text("正在导出…")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppTheme.secondaryInk)
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
-                .apricotElevation(.primary)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(AppTheme.primary.opacity(0.2), lineWidth: 1)
+                }
+            } else {
+                Button(action: exportBackup) {
+                    Label("导出备份", systemImage: "square.and.arrow.up")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .background(LinearGradient(colors: [.orange.opacity(0.70), AppTheme.primary], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                        .apricotElevation(.primary)
+                }
+                .accessibilityHint("生成并分享含照片的备份包")
+            }
         }
-        .accessibilityHint("生成并分享宝宝辅食数据 JSON 文件")
     }
 
-    private func exportJSON() {
+    private func exportBackup() {
+        isExporting = true
+        exportError = nil
+        exportProgress = 0
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let bundle = store.buildBackup()
+            DispatchQueue.main.async { exportProgress = 0.3 }
+
+            do {
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("baby-food-diary-backup.zip")
+                try? FileManager.default.removeItem(at: url)
+                try BackupArchive.writeZip(bundle, to: url)
+                DispatchQueue.main.async {
+                    exportProgress = 0.7
+                    // Brief pause so user sees the progress bar fill
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        exportProgress = 1.0
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                            isExporting = false
+                            exportProgress = 0
+                            presentActivitySheet(with: url)
+                        }
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    isExporting = false
+                    exportProgress = 0
+                    exportError = "导出失败，请稍后重试。"
+                }
+            }
+        }
+    }
+
+    private func presentActivitySheet(with url: URL) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+            exportError = "无法打开分享面板。"
+            return
+        }
+
+        var topVC = rootVC
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+
+        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = topVC.view
+            popover.sourceRect = CGRect(x: topVC.view.bounds.midX, y: topVC.view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+
+        topVC.present(activityVC, animated: true)
+    }
+
+    // MARK: Import
+
+    private var importButton: some View {
+        VStack(spacing: 10) {
+            if isImporting {
+                VStack(spacing: 8) {
+                    ProgressView(value: importProgress, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle(tint: AppTheme.success))
+                        .scaleEffect(x: 1, y: 1.2, anchor: .center)
+                        .padding(.horizontal, 4)
+                    Text("正在导入…")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppTheme.secondaryInk)
+                }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(AppTheme.success.opacity(0.25), lineWidth: 1)
+                }
+            } else {
+                Button { showDocumentPicker = true } label: {
+                    Label("导入备份", systemImage: "square.and.arrow.down")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.primary)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .background(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(AppTheme.primary, lineWidth: 1.5)
+                        }
+                }
+                .accessibilityHint("从备份包恢复宝宝辅食数据")
+            }
+        }
+    }
+
+    private func handlePickedImport(url: URL) {
+        importError = nil
+        importSuccessMessage = nil
+
+        guard url.startAccessingSecurityScopedResource() else {
+            importError = "无法读取文件，请重试。"
+            return
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
+
         do {
-            exportURL = try ExportDocument.makeURL()
-            exportError = nil
-            isShareSheetPresented = true
+            let bundle = try BackupArchive.readZip(at: url)
+            guard bundle.payload["baby"] != nil else {
+                importError = "文件格式不正确，请选择导出的备份包（.zip）。"
+                return
+            }
         } catch {
-            exportURL = nil
-            exportError = "导出失败，请稍后重试。"
+            importError = "文件格式不正确，请选择导出的备份包（.zip）。"
+            return
+        }
+
+        pendingImportURL = url
+        showImportConfirmation = true
+    }
+
+    private func performImport() {
+        guard let url = pendingImportURL else { return }
+        pendingImportURL = nil
+        isImporting = true
+        importError = nil
+        importSuccessMessage = nil
+        importProgress = 0
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard url.startAccessingSecurityScopedResource() else {
+                DispatchQueue.main.async { isImporting = false; importError = "无法读取文件，请重试。" }
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            DispatchQueue.main.async { importProgress = 0.15 }
+
+            do {
+                let bundle = try BackupArchive.readZip(at: url)
+                let summary = try store.importBackup(bundle)
+                DispatchQueue.main.async {
+                    importProgress = 0.6
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                        importProgress = 1.0
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                            isImporting = false
+                            importProgress = 0
+                            var parts: [String] = []
+                            if summary.totalRecords > 0 { parts.append("\(summary.totalRecords) 条用餐记录") }
+                            if summary.newRecipes > 0 { parts.append("\(summary.newRecipes) 种新菜谱") }
+                            if summary.photos > 0 { parts.append("\(summary.photos) 张照片") }
+                            let detail = parts.isEmpty ? "已更新宝宝资料" : parts.joined(separator: "、")
+                            importSuccessMessage = "导入完成：\(detail)。"
+                        }
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    isImporting = false
+                    importProgress = 0
+                    importError = "导入失败，请稍后重试。"
+                }
+            }
         }
     }
 }
@@ -485,47 +2442,12 @@ struct SettingsTextField: View {
 }
 
 struct ExportDocument {
-    static func makeURL() throws -> URL {
-        let document: [String: Any] = [
-            "baby": [
-                "name": "泡泡",
-                "age": "10个月20天",
-                "gender": "男宝"
-            ],
-            "recipes": DemoData.recipes.map { recipe in
-                [
-                    "name": recipe.name,
-                    "categories": recipe.categories,
-                    "recordCount": recipe.count,
-                    "lastRecordedAt": recipe.last
-                ]
-            },
-            "mealRecords": [
-                mealRecord(date: "2024-05-20", meal: "早餐", time: "08:30", dishes: MealDishFixtures.breakfast, note: "吃得开心，胃口很好，便便正常。"),
-                mealRecord(date: "2024-05-19", meal: "午餐", time: "12:30", dishes: MealDishFixtures.lunch, note: "少量打嗝，无其他不适。")
-            ]
-        ]
-        let data = try JSONSerialization.data(withJSONObject: document, options: [.prettyPrinted, .sortedKeys])
+    static func makeURL(payload: [String: Any]) throws -> URL {
+        let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys])
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("baby-food-diary-export.json")
         try data.write(to: url, options: .atomic)
         return url
-    }
-
-    private static func mealRecord(
-        date: String,
-        meal: String,
-        time: String,
-        dishes: [MealDish],
-        note: String
-    ) -> [String: Any] {
-        [
-            "date": date,
-            "meal": meal,
-            "time": time,
-            "dishes": dishes.map { ["name": $0.name, "reaction": $0.reaction.rawValue] },
-            "note": note
-        ]
     }
 }
 
