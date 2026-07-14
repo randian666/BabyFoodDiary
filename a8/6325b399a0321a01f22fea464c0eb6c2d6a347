@@ -1,0 +1,21 @@
+.gitignore
+  s_a19b5734c9acf7::t_f1554516a52fd8 18-20,22-25
+  s_a19b5734c9acf7::t_623046c90dfcbf 21
+  s_a19b5734c9acf7::t_53230a99522c73 26-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "a86325b399a0321a01f22fea464c0eb6c2d6a347",
+  "prompts": {},
+  "sessions": {
+    "s_a19b5734c9acf7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5c3b-5e26-7370-b4d9-323d0ee3a9b6",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
