@@ -31,5 +31,7 @@ style-variants/
 
 # Repository screenshots used by README
 docs/*
+!docs/app-store-metadata-zh-Hans.md
+!docs/privacy-policy.md
 !docs/images/
 !docs/images/**

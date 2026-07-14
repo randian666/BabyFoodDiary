@@ -2324,6 +2324,7 @@ struct SettingsView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
+                    privacyCard
                 }
                 .padding(.horizontal, 17)
                 .padding(.top, 12)
@@ -2464,6 +2465,34 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    private var privacyCard: some View {
+        NavigationLink {
+            PrivacyPolicyView()
+        } label: {
+            ApricotCard {
+                HStack(spacing: 12) {
+                    Image(systemName: "hand.raised.fill")
+                        .foregroundStyle(AppTheme.primary)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("隐私政策")
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.ink)
+                        Text("了解资料如何保存在设备上")
+                            .font(.subheadline)
+                            .foregroundStyle(AppTheme.secondaryInk)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.bold())
+                        .foregroundStyle(AppTheme.secondaryInk)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("查看宝宝尝鲜记隐私政策")
     }
 
     private var exportButton: some View {
@@ -2671,6 +2700,53 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+struct PrivacyPolicyView: View {
+    private let sections: [(title: String, body: String)] = [
+        ("我们收集哪些信息", "宝宝尝鲜记不会将个人信息或使用数据发送给开发者。宝宝昵称、出生日期、头像、辅食记录、备注与照片仅保存在你的设备上。"),
+        ("照片权限", "只有当你主动选择照片时，App 才会通过 Apple 提供的系统照片选择器读取所选内容，用于添加头像或用餐照片。App 不会浏览或上传你的完整照片图库。"),
+        ("数据存储与备份", "记录由系统提供的 SwiftData 保存在本机。你可以在设置中主动导出 ZIP 备份，并自行选择保存或分享位置；导出后的文件由你负责保管。导入操作只读取你主动选择的备份文件。"),
+        ("数据共享与追踪", "App 不包含广告、第三方分析工具或跨 App 追踪，也不会向开发者或第三方出售、共享你的数据。"),
+        ("删除数据", "你可以在 App 内删除相关记录，或通过 iPhone 的系统设置删除 App 及其全部本地数据。删除 App 前如需保留资料，请先导出备份。"),
+        ("儿童隐私", "本 App 供家长或监护人记录宝宝的饮食信息，不面向儿童创建账号或直接收集儿童信息。请由家长或监护人管理设备中的资料。"),
+        ("政策更新", "如果未来版本的数据处理方式发生变化，我们会更新本政策，并在需要时重新征求你的授权。")
+    ]
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("隐私政策")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(AppTheme.ink)
+                Text("更新日期：2026年7月14日")
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.secondaryInk)
+
+                ForEach(sections, id: \.title) { section in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(section.title)
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.ink)
+                        Text(section.body)
+                            .font(.body)
+                            .foregroundStyle(AppTheme.secondaryInk)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                Text("如对隐私政策有疑问，请通过 App Store 产品页面中的支持链接联系我们。")
+                    .font(.footnote)
+                    .foregroundStyle(AppTheme.secondaryInk)
+                    .padding(.top, 4)
+            }
+            .padding(20)
+            .padding(.bottom, 24)
+        }
+        .background(AppTheme.background)
+        .navigationTitle("隐私政策")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
