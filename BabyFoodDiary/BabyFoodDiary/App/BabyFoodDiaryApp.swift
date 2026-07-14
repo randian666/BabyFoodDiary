@@ -991,6 +991,7 @@ struct HistoryView: View {
     @State private var weekAnchor: Date = .now
     @State private var selectedDate: Date?
     @State private var displayMode: HistoryDisplayMode = .recipe
+    @State private var pendingDeletion: HistoryRecordVM?
 
     private var displayedRecords: [HistoryRecordVM] {
         if let selectedDate {
@@ -1054,6 +1055,9 @@ struct HistoryView: View {
                                 photoData: vm.photoData,
                                 onPhotoTap: {
                                     openImagePreview(vm)
+                                },
+                                onDelete: {
+                                    pendingDeletion = vm
                                 }
                             )
                         }.buttonStyle(.plain)
@@ -1067,6 +1071,20 @@ struct HistoryView: View {
         .sheet(item: $editingSeed) { seed in MealRecordView(form: seed.form) }
         .fullScreenCover(item: $imagePreview) { session in
             HistoryImagePreviewView(previews: session.previews, initialIndex: session.initialIndex)
+        }
+        .alert("删除记录", isPresented: Binding(
+            get: { pendingDeletion != nil },
+            set: { if !$0 { pendingDeletion = nil } }
+        )) {
+            Button("取消", role: .cancel) { pendingDeletion = nil }
+            Button("删除", role: .destructive) {
+                if let vm = pendingDeletion {
+                    store.deleteMealRecord(id: vm.id)
+                    pendingDeletion = nil
+                }
+            }
+        } message: {
+            Text("删除后无法恢复，确定删除这条用餐记录吗？")
         }
     }
 
@@ -1257,10 +1275,21 @@ struct CalendarDateCell: View {
 struct HistoryRecordCard: View {
     let date: String; let meal: String; let time: String; let dishes: [MealDish]; let overallReaction: Reaction; let note: String; let photoData: Data?
     let onPhotoTap: () -> Void
+    var onDelete: () -> Void
     var body: some View {
         ApricotCard {
             VStack(alignment: .leading, spacing: 11) {
-                Text(date).font(.subheadline.weight(.bold)).foregroundStyle(AppTheme.primary)
+                HStack {
+                    Text(date).font(.subheadline.weight(.bold)).foregroundStyle(AppTheme.primary)
+                    Spacer()
+                    Image(systemName: "trash")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(AppTheme.secondaryInk)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                        .highPriorityGesture(TapGesture().onEnded(onDelete))
+                        .accessibilityLabel("删除记录")
+                }
                 HStack(spacing: 8) {
                     let mealPeriod = MealPeriod.resolve(meal)
                     Image(systemName: mealPeriod?.symbol ?? "fork.knife").foregroundStyle(mealPeriod?.color ?? AppTheme.warning)
@@ -1665,8 +1694,6 @@ struct MealRecordView: View {
 
     @State private var showDatePicker = false
     @State private var showRecipePicker = false
-    @State private var showCustomAlert = false
-    @State private var customName = ""
     @State private var showValidation = false
     @State private var showPhotoPicker = false
     @State private var iconEditTarget: IconEditTarget?
@@ -1749,10 +1776,7 @@ struct MealRecordView: View {
                         }
                     }
                 } }
-                HStack(spacing: 10) {
-                    addButton(title: "从菜谱中选择", systemImage: "book.closed") { showRecipePicker = true }
-                    addButton(title: "添加新菜谱", systemImage: "plus.circle") { customName = ""; showCustomAlert = true }
-                }
+                addButton(title: "添加菜谱", systemImage: "plus.circle") { showRecipePicker = true }
             }
             VStack(alignment: .leading, spacing: 8) {
                 Text("上传照片（选填）").font(.subheadline.bold())
@@ -1795,8 +1819,8 @@ struct MealRecordView: View {
         .presentationDetents([.large])
         .sheet(isPresented: $showDatePicker) { datePickerSheet }
         .sheet(isPresented: $showRecipePicker) {
-            RecipePickerSheet { recipe in
-                dishes.append(DishSnapshot(recipe: recipe, reaction: .like))
+            RecipePickerSheet(initialDishes: dishes) { selected in
+                reconcileDishes(with: selected)
                 showRecipePicker = false
             }
         }
@@ -1814,11 +1838,6 @@ struct MealRecordView: View {
                 dishes[index].iconID = icon.id
                 store.updateRecipeIcon(id: target.recipeID, iconID: icon.id)
             }
-        }
-        .alert("添加新菜谱", isPresented: $showCustomAlert) {
-            TextField("菜谱名称", text: $customName)
-            Button("添加") { addNewRecipe() }
-            Button("取消", role: .cancel) {}
         }
         .alert("至少添加一道宝宝尝过的食物", isPresented: $showValidation) { Button("好的", role: .cancel) {} }
     }
@@ -1838,14 +1857,6 @@ struct MealRecordView: View {
 
     private func clearAll() {
         date = .now; meal = DiaryStore.inferredMeal(); reaction = .like; note = ""; photoData = nil; livePhotoData = nil; livePhotoAssetIdentifier = nil; livePhotoResourcesData = nil; dishes = []
-    }
-
-    private func addNewRecipe() {
-        let name = customName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return }
-        let recipe = store.addRecipe(name: name)
-        dishes.append(DishSnapshot(recipe: recipe, reaction: reaction))
-        customName = ""
     }
 
     private func recipeCategories(for dish: DishSnapshot) -> [String] {
@@ -1869,6 +1880,18 @@ struct MealRecordView: View {
     private func selectRecipeType(_ type: String, for dish: DishSnapshot) {
         guard let recipeID = dish.recipeID else { return }
         store.updateRecipeCategories(id: recipeID, categories: [type])
+    }
+
+    private func reconcileDishes(with selected: [DishSnapshot]) {
+        let selectedIDs = Set(selected.map { $0.id })
+        // Keep existing dishes that remain selected (preserves their reaction/type/icon edits).
+        var kept = dishes.filter { selectedIDs.contains($0.id) }
+        let keptIDs = Set(kept.map { $0.id })
+        // Append newly selected dishes (existing recipes or ad-hoc new ones).
+        for snap in selected where !keptIDs.contains(snap.id) {
+            kept.append(snap)
+        }
+        dishes = kept
     }
 
     @ViewBuilder
@@ -1923,38 +1946,148 @@ struct ReactionOption: View { let reaction: Reaction; let isSelected: Bool; var 
 struct RecipePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(DiaryStore.self) private var store
-    let onPick: (Recipe) -> Void
+    let onConfirm: ([DishSnapshot]) -> Void
+    @State private var selected: [DishSnapshot]
     @State private var search = ""
+    @FocusState private var searchFocused: Bool
+
+    init(initialDishes: [DishSnapshot], onConfirm: @escaping ([DishSnapshot]) -> Void) {
+        self.onConfirm = onConfirm
+        _selected = State(initialValue: initialDishes)
+    }
+
+    private var trimmedSearch: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var results: [Recipe] { store.libraryRecipes(search: search, category: "全部") }
+    private var canCreateNew: Bool {
+        !trimmedSearch.isEmpty
+            && !store.recipes.contains { $0.name == trimmedSearch }
+            && !selected.contains { $0.name == trimmedSearch }
+    }
+
+    private func recipeSelected(_ recipe: Recipe) -> Bool { selected.contains { $0.recipeID == recipe.id } }
+
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 10) {
-                    ForEach(store.libraryRecipes(search: search, category: "全部")) { recipe in
-                        Button { onPick(recipe) } label: {
-                            HStack(spacing: 12) {
-                                FoodThumbnail(recipe: recipe, size: 44)
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(recipe.name).font(.subheadline.bold()).foregroundStyle(AppTheme.ink)
-                                    HStack { ForEach(recipe.categories.prefix(2), id: \.self) { Pill(text: $0, color: AppTheme.warning) } }
-                                    Text("已记录 \(recipe.count) 次").font(.caption2).foregroundStyle(AppTheme.secondaryInk)
-                                }
-                                Spacer()
-                                Image(systemName: "plus.circle.fill").foregroundStyle(AppTheme.primary)
-                            }
-                            .padding(12)
-                            .background(AppTheme.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .apricotElevation(.card)
+            VStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass").foregroundStyle(AppTheme.secondaryInk)
+                    TextField("搜索菜名，没找到可直接新建", text: $search)
+                        .focused($searchFocused)
+                        .font(.subheadline)
+                        .submitLabel(.done)
+                    if !search.isEmpty {
+                        Button { search = ""; searchFocused = true } label: {
+                            Image(systemName: "xmark.circle.fill").foregroundStyle(AppTheme.secondaryInk)
                         }.buttonStyle(.plain)
                     }
-                }.padding(17)
+                }
+                .padding(12)
+                .background(AppTheme.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .apricotElevation(.control)
+                .padding(.horizontal, 17)
+                .padding(.top, 6)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        if !selected.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(selected) { dish in
+                                        Button { remove(dish) } label: {
+                                            HStack(spacing: 4) {
+                                                Text(dish.name).font(.caption.weight(.bold))
+                                                Image(systemName: "checkmark.circle.fill").font(.caption2)
+                                            }
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 12).padding(.vertical, 7)
+                                            .background(AppTheme.primary)
+                                            .clipShape(Capsule())
+                                        }.buttonStyle(.plain)
+                                    }
+                                }.padding(.horizontal, 2).padding(.vertical, 2)
+                            }.frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        if canCreateNew {
+                            Button { createNew() } label: {
+                                HStack(spacing: 10) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("新建（仅本餐）").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
+                                        Text("「\(trimmedSearch)」").font(.subheadline.bold()).foregroundStyle(AppTheme.ink).lineLimit(1)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(AppTheme.primary)
+                                }
+                                .padding(12)
+                                .background(AppTheme.warmSurface.opacity(0.7))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay { RoundedRectangle(cornerRadius: 16).stroke(AppTheme.primary.opacity(0.3), lineWidth: 1) }
+                            }.buttonStyle(.plain)
+                        }
+                        ForEach(results) { recipe in
+                            Button { toggleRecipe(recipe) } label: {
+                                HStack(spacing: 12) {
+                                    FoodThumbnail(recipe: recipe, size: 44)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(recipe.name).font(.subheadline.bold()).foregroundStyle(AppTheme.ink)
+                                        HStack { ForEach(recipe.categories.prefix(2), id: \.self) { Pill(text: $0, color: AppTheme.warning) } }
+                                        Text("已记录 \(recipe.count) 次").font(.caption2).foregroundStyle(AppTheme.secondaryInk)
+                                    }
+                                    Spacer()
+                                    Image(systemName: recipeSelected(recipe) ? "checkmark.circle.fill" : "plus.circle.fill")
+                                        .font(.title3)
+                                        .foregroundStyle(recipeSelected(recipe) ? AppTheme.success : AppTheme.primary)
+                                }
+                                .padding(12)
+                                .background(AppTheme.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .apricotElevation(.card)
+                                .overlay { RoundedRectangle(cornerRadius: 16).stroke(recipeSelected(recipe) ? AppTheme.success.opacity(0.4) : .clear, lineWidth: 1) }
+                            }.buttonStyle(.plain)
+                        }
+                        if results.isEmpty && trimmedSearch.isEmpty {
+                            Text("输入菜名搜索，没找到可直接新建").font(.subheadline).foregroundStyle(AppTheme.secondaryInk).padding(.top, 30)
+                        }
+                    }.padding(.horizontal, 17).padding(.bottom, 24)
+                }
+                .scrollDismissesKeyboard(.immediately)
             }
             .background(AppTheme.background)
-            .navigationTitle("选择菜谱")
+            .navigationTitle("添加菜谱")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $search, prompt: "搜索食材或菜谱")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(selected.isEmpty ? "完成" : "完成 (\(selected.count))") { onConfirm(selected); dismiss() } }
+            }
         }
+    }
+
+    private func toggleRecipe(_ recipe: Recipe) {
+        if let index = selected.firstIndex(where: { $0.recipeID == recipe.id }) {
+            selected.remove(at: index)
+        } else {
+            selected.append(DishSnapshot(recipe: recipe, reaction: .like))
+        }
+    }
+
+    private func remove(_ dish: DishSnapshot) {
+        selected.removeAll { $0.id == dish.id }
+    }
+
+    /// Creates an ad-hoc dish for this meal only — NOT persisted to the recipe library.
+    private func createNew() {
+        let snap = DishSnapshot(
+            id: UUID(),
+            recipeID: nil,
+            name: trimmedSearch,
+            symbol: "circle.fill",
+            iconID: FoodIconCatalog.matchingIconID(for: trimmedSearch),
+            colorHexA: "FFB366",
+            colorHexB: "FF8A3D",
+            reactionRaw: Reaction.like.rawValue
+        )
+        selected.append(snap)
+        search = ""
     }
 }
 
