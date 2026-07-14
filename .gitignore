@@ -27,5 +27,9 @@ baby-food-diary-backup*.zip
 # Local design references and documentation artifacts
 assets/
 design-system/
-docs/
 style-variants/
+
+# Repository screenshots used by README
+docs/*
+!docs/images/
+!docs/images/**
