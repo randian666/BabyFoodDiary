@@ -1,0 +1,37 @@
+docs/app-store-metadata-zh-Hans.md
+  s_89826580a01468::t_7bf7c4ae89111a 1-86,89-95
+  s_89826580a01468::t_f6b84e792c6fe7 87-88
+docs/privacy-policy.md
+  s_89826580a01468::t_7bf7c4ae89111a 1-38
+BabyFoodDiary/BabyFoodDiary.xcodeproj/project.pbxproj
+  s_89826580a01468::t_121222a8509bbb 309,334
+  s_89826580a01468::t_06f2182b1fc44d 298,323
+README.md
+  s_89826580a01468::t_101d2b3668cf75 3,38,47
+.gitignore
+  s_89826580a01468::t_f0a612de641014 34-35
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_89826580a01468::t_7bf7c4ae89111a 2327,2470-2497,2706-2750
+  s_89826580a01468::t_d83ee01401900e 2751-2752
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "157e5cfc04d7fe50f225f981f52dc2392fff6f5d",
+  "prompts": {},
+  "humans": {
+    "h_a5a383d005f623": {
+      "author": "xun <xun2.liu@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_89826580a01468": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5f7d-c8c2-7b31-ac53-d4328a9eaaef",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
