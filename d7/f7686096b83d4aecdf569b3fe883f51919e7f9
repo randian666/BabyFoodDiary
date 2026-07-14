@@ -1,0 +1,35 @@
+README.md
+  s_f43301d6f55af5::t_031858737e52f2 2,4,6,8,17,19,29,31,90
+  s_055b217c520471::t_320f1cd2eb8794 26-28
+  s_055b217c520471::t_bc8ce0feebb470 20-25
+  s_055b217c520471::t_142a6c732bd638 1,3,5,7,9-16,18,30,32-89,91-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "d7f7686096b83d4aecdf569b3fe883f51919e7f9",
+  "prompts": {},
+  "humans": {
+    "h_a5a383d005f623": {
+      "author": "xun <xun2.liu@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_055b217c520471": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5e9d-e341-7c31-9c80-28af224d9c9d",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_f43301d6f55af5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f452e-baab-7171-8dad-eaa9d2b8e571",
+        "model": "gpt-5.5"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
