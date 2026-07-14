@@ -1,0 +1,164 @@
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/pork.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/quail-egg.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/yuba.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/papaya.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/scallop.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/black-sesame.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/flaxseed-oil.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/salmon.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/soy-milk.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/black-bean.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/sea-cucumber.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/sesame.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/squid.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/yellow-croaker.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/fish-roe.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/kiwi.imageset/Contents.json
+  s_3f38b307028518::t_f26f3c9ece8196 1-8
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/bass.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/Design/AppTheme.swift
+  s_c7040403928006::t_03ac69fa2ce3a9 2,7-22,24-27,32-37
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/avocado.imageset/Contents.json
+  s_3f38b307028518::t_05d40fd92e98c5 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/mung-bean.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/red-bean.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/peanut.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/sesame-oil.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/cuttlefish.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/cheese.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/duck.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/longan.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_c7040403928006::t_2d883270784c11 375,504,1631,1694,1913
+  s_c7040403928006::t_8f46b11cfcd25a 460,481
+  s_c7040403928006::t_847ea06c2f67bb 990,1043,1056,1068-1069,1072-1077,1183-1184,1189-1203,1345-1353,1360-1371,1393-1401,1452
+  s_c7040403928006::t_f11b5ecd4a900d 193,824,846,899,907-924,926-927
+  s_c7040403928006::t_90fa9b6e59392b 1461-1462,1469-1471,1499-1500,1507-1509,1610-1611
+  s_c7040403928006::t_6eee795ae1d099 367,376-390,412-416,1412-1417,1429-1451
+  s_c7040403928006::t_0e706b681eb62b 434-439,445-450,454,456-459,461-475,477-480
+  s_c7040403928006::t_9e040b7227a5b2 845
+  s_c7040403928006::t_8e036c16e96d9c 658,727,790,1945,2260,2351,2448,2460
+  s_c7040403928006::t_803c8ad0e41f1f 476
+  s_c7040403928006::t_358cb90fe7ae1d 1402
+  s_c7040403928006::t_4c4406c553a02a 1453-1454
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/olive-oil.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/lamb.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/chickpea.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/yogurt.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/hairtail.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/tofu.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/pineapple.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/soybean.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/shrimp.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/Data/DiaryStore.swift
+  s_c7040403928006::t_9fab06ee17fc93 273,294-342
+  s_c7040403928006::t_9e040b7227a5b2 140,542-545,549-550,553
+  s_c7040403928006::t_6c7c408f267d40 343-344
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/cherry.imageset/Contents.json
+  s_3f38b307028518::t_a227f764ec0b36 1-8
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/butter.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/pigeon.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/rapeseed-oil.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/peach.imageset/Contents.json
+  s_3f38b307028518::t_1b4c25ba5bf8eb 1-8
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/vinegar.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/cod.imageset/Contents.json
+  s_3f38b307028518::t_e814b42dc41e94 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/dried-tofu.imageset/Contents.json
+  s_3f38b307028518::t_fe2133fb9b8c35 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/dragon-fruit.imageset/Contents.json
+  s_3f38b307028518::t_9ad59b3188aa1e 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/liver.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/milk.imageset/Contents.json
+  s_3f38b307028518::t_65f5cc03158d29 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/salt.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/walnut-oil.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/jujube.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/clam.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/white-sesame.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/oyster.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/crab.imageset/Contents.json
+  s_3f38b307028518::t_507f9f48b1f0fe 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/mango.imageset/Contents.json
+  s_3f38b307028518::t_aca7f61e5eed7b 1-21
+BabyFoodDiary/BabyFoodDiary/FoodIcons.xcassets/soy-sauce.imageset/Contents.json
+  s_3f38b307028518::t_78e7eb5b8c5015 1
+BabyFoodDiary/BabyFoodDiary.xcodeproj/project.pbxproj
+  s_580d745fcf0e43::t_44bd315abacec3 35-36,42,295,319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "3511d9d62253af82ef41558afe44e790cdef49f5",
+  "prompts": {},
+  "sessions": {
+    "s_3f38b307028518": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5a3e-117a-74a2-854b-de69e4b512c1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_580d745fcf0e43": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5bc8-0120-7001-833d-943e2bec4be8",
+        "model": "unknown"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_c7040403928006": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5bc6-ec48-7be3-8981-91e059b6fc94",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
