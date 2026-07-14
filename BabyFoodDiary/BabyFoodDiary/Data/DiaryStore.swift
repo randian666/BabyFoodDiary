@@ -137,9 +137,7 @@ struct RecipeDetailVM {
 struct RankRow: Identifiable {
     let id: UUID
     let recipe: Recipe
-    let percent: Int
-    let percentText: String
-    let count: Int
+    let likeCount: Int
     let color: Color
 }
 
@@ -272,6 +270,7 @@ final class DiaryStore {
     // MARK: First-launch seeding
 
     private func bootstrap() {
+        if migrateTasteNotesIfPresent() { return }
         let recipeCount = (try? context.fetchCount(FetchDescriptor<RecipeEntity>())) ?? 0
         if recipeCount == 0 { DiarySeed.populate(into: context) }
         let recipes = (try? context.fetch(FetchDescriptor<RecipeEntity>())) ?? []
@@ -290,6 +289,57 @@ final class DiaryStore {
             try? context.save()
         }
         try? context.save()
+    }
+
+    /// One-time import for data copied from the companion app "宝宝尝鲜记".
+    /// The source files are placed in this app's Documents directory by the deployment tool.
+    @discardableResult
+    private func migrateTasteNotesIfPresent() -> Bool {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let source = documents.appendingPathComponent("baby-taste-notes-data-v4.json")
+        guard let data = try? Data(contentsOf: source),
+              let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let sourceRecipes = payload["recipes"] as? [[String: Any]],
+              let sourceMeals = payload["meals"] as? [[String: Any]] else { return false }
+
+        let oldRecipes = (try? context.fetch(FetchDescriptor<RecipeEntity>())) ?? []
+        let oldMeals = (try? context.fetch(FetchDescriptor<MealRecordEntity>())) ?? []
+        let oldBabies = (try? context.fetch(FetchDescriptor<BabyProfileEntity>())) ?? []
+        oldRecipes.forEach(context.delete); oldMeals.forEach(context.delete); oldBabies.forEach(context.delete)
+
+        var recipesBySourceID: [String: RecipeEntity] = [:]
+        for item in sourceRecipes {
+            guard let name = item["name"] as? String else { continue }
+            let category = item["category"] as? String ?? "其他"
+            let recipe = RecipeEntity(name: name, categories: [category], symbol: "circle.fill",
+                                      iconID: FoodIconCatalog.matchingIconID(for: name),
+                                      colorHexA: "FFB366", colorHexB: "FF8A3D")
+            context.insert(recipe)
+            if let id = item["id"] as? String { recipesBySourceID[id] = recipe }
+        }
+
+        let photos = documents.appendingPathComponent("MealPhotos", isDirectory: true)
+        let formatter = ISO8601DateFormatter()
+        for item in sourceMeals {
+            let date = (item["date"] as? String).flatMap(formatter.date(from:)) ?? .now
+            let dishes = ((item["recipes"] as? [[String: Any]]) ?? []).compactMap { dish -> DishSnapshot? in
+                guard let sourceID = dish["recipeId"] as? String, let recipe = recipesBySourceID[sourceID] else { return nil }
+                let reaction = dish["reaction"] as? String ?? "neutral"
+                return DishSnapshot(id: UUID(), recipeID: recipe.id, name: recipe.name, symbol: recipe.symbol,
+                                    iconID: recipe.iconID, colorHexA: recipe.colorHexA, colorHexB: recipe.colorHexB,
+                                    reactionRaw: reaction == "dislike" ? "refused" : reaction)
+            }
+            let imageData = (item["imageId"] as? String).flatMap { try? Data(contentsOf: photos.appendingPathComponent($0)) }
+            let meal = ["breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐", "snack": "加餐"][item["mealType"] as? String ?? ""] ?? "加餐"
+            let reaction = ((item["overallReaction"] as? String) == "dislike") ? Reaction.refused : ((item["overallReaction"] as? String) == "like" ? Reaction.like : Reaction.neutral)
+            context.insert(MealRecordEntity(date: date, meal: meal, overallReaction: reaction,
+                                            note: item["notes"] as? String ?? "", photoData: imageData, dishes: dishes))
+        }
+        context.insert(BabyProfileEntity(name: "宝宝", birthDate: Self.ageReferenceDate(), gender: "男宝"))
+        try? context.save()
+        try? FileManager.default.removeItem(at: source)
+        try? FileManager.default.removeItem(at: photos)
+        return true
     }
 
     /// A reference birth date ~10 months 20 days ago, used to seed/backfill the demo baby age.
@@ -489,20 +539,18 @@ final class DiaryStore {
 
         var rows: [RankRow] = []
         for recipe in recipes {
-            let related = windowRecords.filter { $0.dishes.contains { $0.recipeID == recipe.id } }
-            guard !related.isEmpty else { continue }
-            let likes = related.filter { $0.overallReaction == .like }.count
-            let percent = Int((Double(likes) / Double(related.count)) * 100)
+            let likes = windowRecords.reduce(into: 0) { count, record in
+                count += record.dishes.filter { $0.recipeID == recipe.id && $0.reaction == .like }.count
+            }
+            guard likes > 0 else { continue }
             rows.append(RankRow(
                 id: recipe.id,
                 recipe: recipe,
-                percent: percent,
-                percentText: "\(percent)%",
-                count: related.count,
-                color: percent >= 50 ? AppTheme.success : AppTheme.warning
+                likeCount: likes,
+                color: AppTheme.success
             ))
         }
-        rows.sort { $0.percent == $1.percent ? $0.count > $1.count : $0.percent > $1.percent }
+        rows.sort { $0.likeCount == $1.likeCount ? $0.recipe.name < $1.recipe.name : $0.likeCount > $1.likeCount }
         return AnalysisSummary(rangeLabel: rangeLabel, total: windowRecords.count, counts: counts, ranking: rows)
     }
 

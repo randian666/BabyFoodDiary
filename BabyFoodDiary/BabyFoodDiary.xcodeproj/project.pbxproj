@@ -32,14 +32,14 @@
 		A20000000000000000000001 /* BabyFoodDiaryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyFoodDiaryApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		A20000000000000000000003 /* BabyFoodDiaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyFoodDiaryTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* BabyFoodDiary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BabyFoodDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000005 /* BabyFoodDiaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BabyFoodDiaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000000000000000000006 /* DiaryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryModels.swift; sourceTree = "<group>"; };
 		A20000000000000000000007 /* DiaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryStore.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* DiarySeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiarySeed.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* FoodIconCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodIconCatalog.swift; sourceTree = "<group>"; };
-		A2000000000000000000000B /* BackupArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupArchive.swift; sourceTree = "<group>"; };
 		A2000000000000000000000A /* FoodIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = FoodIcons.xcassets; sourceTree = "<group>"; };
-		A20000000000000000000004 /* BabyFoodDiary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BabyFoodDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A20000000000000000000005 /* BabyFoodDiaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BabyFoodDiaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A2000000000000000000000B /* BackupArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupArchive.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,7 +292,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BF79HG2VSY;
-					ENABLE_TESTABILITY = YES;
+				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "宝宝尝鲜记";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于将实况照片保存到宝宝辅食日记中。";
@@ -316,7 +316,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BF79HG2VSY;
-					ENABLE_TESTABILITY = YES;
+				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "宝宝尝鲜记";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "用于将实况照片保存到宝宝辅食日记中。";
