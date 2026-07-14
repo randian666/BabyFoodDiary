@@ -1,0 +1,33 @@
+.gitignore
+  s_a19b5734c9acf7::t_fe361eac69058b 33,35
+  s_055b217c520471::t_e3a2ee9fb529ca 31-32,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "2bb21f3620d0e42e02a0d6099cf523b01791726e",
+  "prompts": {},
+  "humans": {
+    "h_a5a383d005f623": {
+      "author": "xun <xun2.liu@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_055b217c520471": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5e9d-e341-7c31-9c80-28af224d9c9d",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    },
+    "s_a19b5734c9acf7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5c3b-5e26-7370-b4d9-323d0ee3a9b6",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
