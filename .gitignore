@@ -15,3 +15,17 @@ Package.resolved
 
 # Local tooling state (superpowers skill system)
 .superpowers/
+
+# User-generated diary data and backups
+# These files may contain baby profiles, meal records, notes, and photos.
+.migration/
+baby-taste-notes-data-v4.json
+MealPhotos/
+baby-food-diary-export*.json
+baby-food-diary-backup*.zip
+
+# Local design references and documentation artifacts
+assets/
+design-system/
+docs/
+style-variants/
