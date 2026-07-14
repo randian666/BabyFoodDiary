@@ -1,0 +1,35 @@
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_e4894d6991cc19::t_508f4b59c6efd4 1075-1088
+  s_e4894d6991cc19::t_211dd9d8625601 1278,1282-1292
+  s_e4894d6991cc19::t_c3889bdabfbd92 1822
+  s_e4894d6991cc19::t_4c7f1c5e1caf0d 1058-1060
+  s_e4894d6991cc19::t_718c66d69f44ae 994
+  s_e4894d6991cc19::t_760e3f52f21cba 1779
+  s_e4894d6991cc19::t_bfc93b9c4e5757 1885,1887-1892,1894
+  s_e4894d6991cc19::t_5af761ed2f3db0 1953,1957,1960,1966,2056,2075-2076,2078,2091
+  s_e4894d6991cc19::t_a472d900b3ec95 1968,2058-2061,2064,2067-2068,2090
+  s_e4894d6991cc19::t_7a91783c7c2494 1886,1893,1895-1896
+  s_e4894d6991cc19::t_9bfd0ae413bd0c 1823
+  s_e4894d6991cc19::t_595ce96fd76c74 1949-1950,1952,1954-1956,1958-1959,1961-1965,1967,1971-1980,1983-2053,2065-2066,2069-2074,2077,2079-2089
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "fc4bb442e6f4ee7124c9f3b922ba1e69d6d10f3f",
+  "prompts": {},
+  "humans": {
+    "h_a5a383d005f623": {
+      "author": "xun <xun2.liu@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_e4894d6991cc19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c73a3ac3-36d1-4146-bfe0-e463fa6cbbd4",
+        "model": "glm-5.2"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
