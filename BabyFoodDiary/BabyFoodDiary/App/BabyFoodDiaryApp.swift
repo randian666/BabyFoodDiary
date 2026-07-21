@@ -154,7 +154,7 @@ struct RecordSeed: Identifiable {
 private struct IconEditTarget: Identifiable {
     let id = UUID()
     let dishID: UUID?
-    let recipeID: UUID
+    let recipeID: UUID?
 }
 
 private enum HomeOverviewDestination: Identifiable, Equatable {
@@ -716,7 +716,7 @@ struct RecipeDetailView: View {
         .background(AppTheme.background)
         .sheet(item: $iconEditTarget) { target in
             FoodIconPickerSheet(selectedID: currentRecipe.iconID) { icon in
-                store.updateRecipeIcon(id: target.recipeID, iconID: icon.id)
+                if let recipeID = target.recipeID { store.updateRecipeIcon(id: recipeID, iconID: icon.id) }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -1731,7 +1731,7 @@ struct MealRecordView: View {
                             VStack(spacing: 0) {
                                 HStack(spacing: 10) {
                                     Button {
-                                        if let recipeID = dish.recipeID { iconEditTarget = IconEditTarget(dishID: dish.id, recipeID: recipeID) }
+                                        iconEditTarget = IconEditTarget(dishID: dish.id, recipeID: dish.recipeID)
                                     } label: {
                                         MealDishThumbnail(dish: MealDish(snapshot: dish), size: 38)
                                     }
@@ -1744,7 +1744,7 @@ struct MealRecordView: View {
                                             Menu {
                                                 ForEach(recipeTypes, id: \.self) { type in
                                                     Button { selectRecipeType(type, for: dish) } label: {
-                                                        Label(type, systemImage: recipeCategories(for: dish).contains(type) ? "checkmark" : "")
+                                                        Label(type, systemImage: currentType(for: dish) == type ? "checkmark" : "")
                                                     }
                                                 }
                                             } label: {
@@ -1836,7 +1836,7 @@ struct MealRecordView: View {
             FoodIconPickerSheet(selectedID: dishes.first(where: { $0.id == target.dishID })?.iconID ?? FoodIconCatalog.defaultID) { icon in
                 guard let index = dishes.firstIndex(where: { $0.id == target.dishID }) else { return }
                 dishes[index].iconID = icon.id
-                store.updateRecipeIcon(id: target.recipeID, iconID: icon.id)
+                if let recipeID = target.recipeID { store.updateRecipeIcon(id: recipeID, iconID: icon.id) }
             }
         }
         .alert("至少添加一道宝宝尝过的食物", isPresented: $showValidation) { Button("好的", role: .cancel) {} }
@@ -1859,13 +1859,16 @@ struct MealRecordView: View {
         date = .now; meal = DiaryStore.inferredMeal(); reaction = .like; note = ""; photoData = nil; livePhotoData = nil; livePhotoAssetIdentifier = nil; livePhotoResourcesData = nil; dishes = []
     }
 
-    private func recipeCategories(for dish: DishSnapshot) -> [String] {
-        guard let recipeID = dish.recipeID else { return [] }
-        return store.recipes.first(where: { $0.id == recipeID })?.categories ?? []
+    /// Current dish type: from the backing recipe, or from the ad-hoc dish's own `type`.
+    private func currentType(for dish: DishSnapshot) -> String? {
+        if let recipeID = dish.recipeID {
+            return store.recipes.first(where: { $0.id == recipeID })?.categories.first
+        }
+        return dish.type
     }
 
     private func recipeTypeLabel(for dish: DishSnapshot) -> String {
-        recipeCategories(for: dish).first ?? "选择类型"
+        currentType(for: dish) ?? "选择类型"
     }
 
     private func recipeTypeColor(for dish: DishSnapshot) -> Color {
@@ -1878,8 +1881,11 @@ struct MealRecordView: View {
     }
 
     private func selectRecipeType(_ type: String, for dish: DishSnapshot) {
-        guard let recipeID = dish.recipeID else { return }
-        store.updateRecipeCategories(id: recipeID, categories: [type])
+        if let recipeID = dish.recipeID {
+            store.updateRecipeCategories(id: recipeID, categories: [type])
+        } else if let index = dishes.firstIndex(where: { $0.id == dish.id }) {
+            dishes[index].type = type
+        }
     }
 
     private func reconcileDishes(with selected: [DishSnapshot]) {
@@ -2012,7 +2018,7 @@ struct RecipePickerSheet: View {
                             Button { createNew() } label: {
                                 HStack(spacing: 10) {
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text("新建（仅本餐）").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
+                                        Text("新建菜谱").font(.caption.weight(.semibold)).foregroundStyle(AppTheme.secondaryInk)
                                         Text("「\(trimmedSearch)」").font(.subheadline.bold()).foregroundStyle(AppTheme.ink).lineLimit(1)
                                     }
                                     Spacer()
@@ -2074,7 +2080,7 @@ struct RecipePickerSheet: View {
         selected.removeAll { $0.id == dish.id }
     }
 
-    /// Creates an ad-hoc dish for this meal only — NOT persisted to the recipe library.
+    /// Creates a draft dish for this meal. It is promoted into the recipe library when the meal is saved.
     private func createNew() {
         let snap = DishSnapshot(
             id: UUID(),

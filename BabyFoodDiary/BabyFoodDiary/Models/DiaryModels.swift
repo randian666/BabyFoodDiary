@@ -100,6 +100,9 @@ struct DishSnapshot: Codable, Identifiable {
     var colorHexA: String
     var colorHexB: String
     var reactionRaw: String
+    /// Per-dish type for ad-hoc dishes with no backing recipe (e.g. "肉食"). Optional so historical
+    /// snapshots remain decodable.
+    var type: String? = nil
 
     var reaction: Reaction { Reaction(rawValue: reactionRaw) ?? .neutral }
     var colors: [Color] { [Color(hex: colorHexA), Color(hex: colorHexB)] }

@@ -585,6 +585,7 @@ final class DiaryStore {
     }
 
     func saveMealRecord(_ form: MealRecordForm) {
+        let dishes = resolveAdHocRecipes(in: form.dishes)
         if let id = form.editingID, let existing = record(id: id) {
             existing.date = form.date
             existing.mealRaw = form.meal
@@ -594,7 +595,7 @@ final class DiaryStore {
             existing.livePhotoData = form.livePhotoData
             existing.livePhotoAssetIdentifier = form.livePhotoAssetIdentifier
             existing.livePhotoResourcesData = form.livePhotoResourcesData
-            existing.dishesJSON = Self.encodeDishes(form.dishes)
+            existing.dishesJSON = Self.encodeDishes(dishes)
             existing.updatedAt = .now
         } else {
             context.insert(MealRecordEntity(
@@ -606,11 +607,44 @@ final class DiaryStore {
                 livePhotoData: form.livePhotoData,
                 livePhotoAssetIdentifier: form.livePhotoAssetIdentifier,
                 livePhotoResourcesData: form.livePhotoResourcesData,
-                dishes: form.dishes
+                dishes: dishes
             ))
         }
         try? context.save()
         refresh()
+    }
+
+    /// Promotes ad-hoc dishes (those with no backing recipe) into persisted recipes on save, so any
+    /// dish recorded once becomes reusable from the library. Same-named dishes reuse an existing
+    /// recipe instead of creating a duplicate. Returns the dishes with `recipeID` back-filled.
+    private func resolveAdHocRecipes(in dishes: [DishSnapshot]) -> [DishSnapshot] {
+        guard dishes.contains(where: { $0.recipeID == nil }) else { return dishes }
+
+        var nameToID: [String: UUID] = [:]
+        for entity in (try? context.fetch(FetchDescriptor<RecipeEntity>())) ?? [] {
+            nameToID[entity.name] = entity.id
+        }
+
+        return dishes.map { dish in
+            guard dish.recipeID == nil else { return dish }
+            var resolved = dish
+            if let existingID = nameToID[dish.name] {
+                resolved.recipeID = existingID
+            } else {
+                let entity = RecipeEntity(
+                    name: dish.name,
+                    categories: dish.type.map { [$0] } ?? [],
+                    symbol: dish.symbol,
+                    iconID: dish.iconID ?? FoodIconCatalog.matchingIconID(for: dish.name),
+                    colorHexA: dish.colorHexA,
+                    colorHexB: dish.colorHexB
+                )
+                context.insert(entity)
+                nameToID[dish.name] = entity.id
+                resolved.recipeID = entity.id
+            }
+            return resolved
+        }
     }
 
     func deleteMealRecord(id: UUID) {
