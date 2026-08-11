@@ -15,6 +15,7 @@ Package.resolved
 
 # Local tooling state (superpowers skill system)
 .superpowers/
+.worktrees/
 
 # User-generated diary data and backups
 # These files may contain baby profiles, meal records, notes, and photos.
