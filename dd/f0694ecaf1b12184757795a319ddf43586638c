@@ -1,0 +1,20 @@
+BabyFoodDiary/BabyFoodDiary/App/BabyFoodDiaryApp.swift
+  s_353f447ecbb976::t_749884a142ea5f 1157,1193-1200
+  s_353f447ecbb976::t_f27f976fb62ea9 1201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "ddf0694ecaf1b12184757795a319ddf43586638c",
+  "prompts": {},
+  "sessions": {
+    "s_353f447ecbb976": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019feff8-a73e-7380-906e-8ff369c0e49b",
+        "model": "gpt-5.4-mini"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
