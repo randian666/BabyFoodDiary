@@ -1,0 +1,24 @@
+.gitignore
+  s_353f447ecbb976::t_f7b4ba927d9f81 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "fab2bcd5070267260ceda319c7afce7a9defb9ff",
+  "prompts": {},
+  "humans": {
+    "h_a5a383d005f623": {
+      "author": "xun <xun2.liu@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_353f447ecbb976": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019feff8-a73e-7380-906e-8ff369c0e49b",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "xun <xun2.liu@ly.com>"
+    }
+  }
+}
